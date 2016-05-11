@@ -1,11 +1,12 @@
 #include <iostream>
+#include <vector>
 
-enum color : std::uint8_t {
+enum Color : std::uint8_t {
     White,
     Black
 };
 
-enum square : std::uint8_t {
+enum Square : std::uint8_t {
     a1, b1, c1, d1, e1, f1, g1, h1,
     a2, b2, c2, d2, e2, f2, g2, h2,
     a3, b3, c3, d3, e3, f3, g3, h3,
@@ -13,7 +14,8 @@ enum square : std::uint8_t {
     a5, b5, c5, d5, e5, f5, g5, h5,
     a6, b6, c6, d6, e6, f6, g6, h6,
     a7, b7, c7, d7, e7, f7, g7, h7,
-    a8, b8, c8, d8, e8, f8, g8, h8
+    a8, b8, c8, d8, e8, f8, g8, h8,
+    Outside
 };
 
 inline std::uint8_t rank(std::uint8_t s)                    { return s / 8; }
@@ -31,7 +33,7 @@ std::string square_to_string[64] = {
     "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8"
 };
 
-square print_order[64] = {
+Square print_order[64] = {
     a8, b8, c8, d8, e8, f8, g8, h8,
     a7, b7, c7, d7, e7, f7, g7, h7,
     a6, b6, c6, d6, e6, f6, g6, h6,
@@ -42,7 +44,7 @@ square print_order[64] = {
     a1, b1, c1, d1, e1, f1, g1, h1
 };
 
-enum piece : std::int8_t {
+enum Piece : std::int8_t {
     Empty   = 0,
     WPawn   = 1,
     WRook   = 2,
@@ -58,7 +60,7 @@ enum piece : std::int8_t {
     BKing   = -WKing
 };
 
-char piece_to_char(piece p) {
+char piece_to_char(Piece p) {
     switch(p) {
     case Empty:
         return '.';
@@ -105,29 +107,73 @@ char piece_to_char(piece p) {
     }
 }
 
-enum move_type : std::uint8_t {
-    quite = 0,
-    double_pawn_push,   // 1
-    king_side_castle,   // 2
-    queen_side_castle,  // 3
-    capture,            // 4s
-    en_passant_capture, // 5
-    knight_promotion = 8,
-    bishop_promotion,   // 9
-    rook_promotion,     // 10
-    ...
+enum Move_flag : std::uint8_t {
+    Quite = 0,
+    Double_Pawn_Push,           // 1
+    King_Side_Castle,           // 2
+    Queen_Side_Castle,          // 3
+    Capture,                    // 4
+    En_Passant_Capture,         // 5
+    Knight_Promotion = 8,
+    Bishop_Promotion,           // 9
+    Rook_Promotion,             // 10
+    Queen_Promotion,            // 11
+    Knight_Promotion_Capture,   // 12
+    Bishop_Promotion_Capture,   // 13
+    Rook_Promotion_Capture,     // 14
+    Queen_Promotion_Capture     // 15
 };
 
-struct move {
+class Move {
+public:
 
-    mv(std::uint8_t from, std::uint8_t to, piece captured = Empty) { }
+    Move(std::uint8_t from, std::uint8_t to, Move_flag mflag) { }
+
+    Move(const Move& m) { mv = m.mv; }
+
+    std::uint8_t get_from() const {
+        return static_cast<std::uint8_t>((mv & 0xFC00) >> 10);
+    }
+
+    std::uint8_t get_to() const {
+        return static_cast<std::uint8_t>((mv & 0x03F0) >> 4);
+    }
+
+    Move_flag get_flag() const {
+        return static_cast<Move_flag>(mv & 0x000F);
+    }
+
+private:
+
+    void set_from(std::uint8_t from) {
+        mv &= 0x03FF;
+        mv |= (static_cast<std::uint16_t>(from) << 10);
+    }
+
+    void set_to(std::uint8_t to) {
+        mv &= 0xFC0F;
+        mv |= (static_cast<std::uint16_t>(to) << 4);
+    }
+
+    void set_move_flag(std::uint8_t mflag) {
+        mv &= 0xFFF0;
+        mv |= static_cast<std::uint16_t>(mflag);
+    }
+
     std::uint16_t mv;
-
 };
 
-struct board {
+class Extended_move : public Move {
+public:
+    Extended_move(Move m, Piece captured_piece) : Move(m), captured(captured_piece) { }
+    Piece captured;
+    // 8-bit additional space is also avaliable!
+};
 
-    board() {
+
+struct Board {
+
+    Board() : en_passant_sq(Outside), captured(Empty) {
         brd[a1] = brd[h1] = WRook;
         brd[b1] = brd[g1] = WKnight;
         brd[c1] = brd[f1] = WBishop;
@@ -143,6 +189,22 @@ struct board {
         brd[e8] = BKing;
     }
 
+    void make_move(const Move& m) {
+
+    }
+
+    void make_move(const Extended_move& m) {
+
+    }
+
+    void undo_move(const Move& m) {
+
+    }
+
+    void undo_move(const Extended_move& m) {
+
+    }
+
     void print_board() const {
 
         for(int i = 0; i < 64; ++i) {
@@ -153,12 +215,27 @@ struct board {
         std::cout << std::endl;
     }
 
-    piece brd[64];
+    Piece brd[64];
+    Square en_passant_sq;
+    Piece captured;         // not needed for extended moves
+};
+
+
+class move_generator {
+public:
+
+    void generate_knight_moves_extended(const Board& b, std::vector<Extended_move>& moves) {
+
+
+
+    }
+
+private:
+
 };
 
 int main(void) {
 
-    board b;
+    Board b;
     b.print_board();
-
 }
