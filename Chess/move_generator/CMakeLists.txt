@@ -9,6 +9,7 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
 endif()
 
 add_definitions(-std=c++11)
+
 aux_source_directory(./ SOURCES)
 add_executable(${PROJECT_NAME} ${SOURCES})
 
