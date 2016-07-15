@@ -1,3 +1,12 @@
+/*
+ *
+ * Murat Yirci - Copyright 2014
+ *
+ * Contact: myirci@gmail.com
+ *
+ *
+*/
+
 #ifndef EIGHT_NUMBERAPP_HPP
 #define EIGHT_NUMBERAPP_HPP
 

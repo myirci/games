@@ -1,46 +1,43 @@
- #ifndef EIGHT_NUMBER_MAIN_FRAME_HPP
+/*
+ *
+ * Murat Yirci - Copyright 2014
+ *
+ * Contact: myirci@gmail.com
+ *
+ *
+*/
+#ifndef EIGHT_NUMBER_MAIN_FRAME_HPP
 #define EIGHT_NUMBER_MAIN_FRAME_HPP
 
 #include <memory>
 #include <array>
 #include <vector>
-
-#include <wx/bitmap.h>
-#include <wx/image.h>
-#include <wx/icon.h>
-#include <wx/bmpbuttn.h>
-#include <wx/gdicmn.h>
-#include <wx/font.h>
-#include <wx/colour.h>
-#include <wx/settings.h>
-#include <wx/string.h>
-#include <wx/button.h>
-#include <wx/sizer.h>
-#include <wx/richtext/richtextctrl.h>
-#include <wx/panel.h>
-#include <wx/statusbr.h>
-#include <wx/menu.h>
 #include <wx/frame.h>
 
-#define wxID_BUTTON_0 1000
-#define wxID_BUTTON_1 1001
-#define wxID_BUTTON_2 1002
-#define wxID_BUTTON_3 1003
-#define wxID_BUTTON_4 1004
-#define wxID_BUTTON_5 1005
-#define wxID_BUTTON_6 1006
-#define wxID_BUTTON_7 1007
-#define wxID_BUTTON_8 1008
+const int wxID_BUTTON_0 = 1000;
+const int wxID_BUTTON_1 = 1001;
+const int wxID_BUTTON_2 = 1002;
+const int wxID_BUTTON_3 = 1003;
+const int wxID_BUTTON_4 = 1004;
+const int wxID_BUTTON_5 = 1005;
+const int wxID_BUTTON_6 = 1006;
+const int wxID_BUTTON_7 = 1007;
+const int wxID_BUTTON_8 = 1008;
 
-#define wxID_MENU_FILE_NEW                  1009
-#define wxID_MENU_SOLVE_BFS                 1010
-#define wxID_MENU_SOLVE_DFS                 1011
-#define wxID_MENU_SOLVE_RECURSIVE_DFS       1012
-#define wxID_MENU_SOLVE_ITERATIVE_DEEPENING 1013
-#define wxID_MENU_SOLVE_A_STAR              1014
-#define wxID_MENU_RESTART                   1015
+const int wxID_MENU_FILE_NEW = 1009;
+const int wxID_MENU_SOLVE_BFS = 1010;
+const int wxID_MENU_SOLVE_DFS = 1011;
+const int wxID_MENU_SOLVE_RECURSIVE_DFS = 1012;
+const int wxID_MENU_SOLVE_ITERATIVE_DEEPENING = 1013;
+const int wxID_MENU_SOLVE_A_STAR = 1014;
+const int wxID_MENU_RESTART = 1015;
 
 class EightNumber;
+class wxBitmapButton;
+class wxRichTextCtrl;
+class wxPanel;
+class wxGridSizer;
+class wxRichTextAttr;
 
 class EightNumberMainFrame : public wxFrame {
 
@@ -78,7 +75,7 @@ private:
     void create_bitmap_buttons(wxGridSizer* gSizer);
     void set_button_bitmaps(const std::array<uint8_t, 9>& board);
     void create_menu();
-    inline void update_status_bar_text();
+    void update_status_bar_text();
 
     // Rich text attributes
     static const wxRichTextAttr RedText;

@@ -1,8 +1,8 @@
-project(EightNumberPuzzle)
+project(Tic-Tac-Toe)
 cmake_minimum_required(VERSION 2.8)
 
 add_definitions(-std=c++11)
-# set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Debug)
 
 aux_source_directory(./gui SOURCES)
 aux_source_directory(./logic SOURCES)
