@@ -1,3 +1,12 @@
+/*
+ *
+ * Murat Yirci - Copyright 2014
+ *
+ * Contact: myirci@gmail.com
+ *
+ *
+*/
+
 #include "EightNumberApp.hpp"
 #include "EightNumberMainFrame.hpp"
 

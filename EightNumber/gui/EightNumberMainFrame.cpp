@@ -1,9 +1,33 @@
+/*
+ *
+ * Murat Yirci - Copyright 2014
+ *
+ * Contact: myirci@gmail.com
+ *
+ *
+*/
 
 #include <cstdint>
 #include <sstream>
 #include "EightNumberMainFrame.hpp"
 #include "../logic/EightNumber.hpp"
 #include "../utility/Utility.hpp"
+
+#include <wx/bitmap.h>
+#include <wx/image.h>
+#include <wx/icon.h>
+#include <wx/bmpbuttn.h>
+#include <wx/gdicmn.h>
+#include <wx/font.h>
+#include <wx/colour.h>
+#include <wx/settings.h>
+#include <wx/string.h>
+#include <wx/button.h>
+#include <wx/sizer.h>
+#include <wx/richtext/richtextctrl.h>
+#include <wx/panel.h>
+#include <wx/statusbr.h>
+#include <wx/menu.h>
 
 BEGIN_EVENT_TABLE(EightNumberMainFrame, wxFrame)
     EVT_BUTTON(wxID_BUTTON_0, EightNumberMainFrame::OnClickButton)

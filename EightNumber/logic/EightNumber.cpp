@@ -1,3 +1,11 @@
+/*
+ *
+ * Murat Yirci - Copyright 2014
+ *
+ * Contact: myirci@gmail.com
+ *
+ *
+*/
 #include "EightNumber.hpp"
 #include <iostream>
 #include <algorithm>

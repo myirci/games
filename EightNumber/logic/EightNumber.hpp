@@ -1,3 +1,11 @@
+/*
+ *
+ * Murat Yirci - Copyright 2014
+ *
+ * Contact: myirci@gmail.com
+ *
+ *
+*/
 #ifndef EIGHT_NUMBER_HPP
 #define EIGHT_NUMBER_HPP
 
