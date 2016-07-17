@@ -26,6 +26,11 @@ enum class Square : std::int8_t {
     x
 };
 
+enum class Symbol : std::int8_t {
+    X,
+    O
+};
+
 class TicTacToe {
 public:
 
@@ -37,7 +42,7 @@ public:
     // setters
     void SetBoard(Board&& b);
     void SetBoard(const Board& b);
-    void SetSquare(std::uint8_t pos, Square);
+    void SetSquare(std::uint8_t pos, Square s);
     void Clear();
 
     // getters
@@ -47,7 +52,14 @@ public:
     bool Empty() const;
     Result GetResult() const;
 
+    // intelligence
+    int MakeARandomMove(Symbol s);
+    int MakeALogicalMove(Symbol s);
+    int MakeAPerfectMove(Symbol s, bool max_player);
+
 private:
     Board m_board;
     void print_board() const;
+    int max_value(Board& b, Square s);
+    int min_value(Board& b, Square s);
 };
