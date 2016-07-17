@@ -8,6 +8,8 @@
 */
 #pragma once
 
+#include "../logic/TicTacToe.hpp"
+
 #include <memory>
 #include <array>
 #include <vector>
@@ -26,16 +28,40 @@ enum {
     wxID_BUTTON_8,
     wxID_MENU_FILE_NEW,
     wxID_MENU_FILE_CLEAR_TEXT_AREA,
-    wxID_MENU_SETTINGS_FIRST_PLAYER_X,
-    wxID_MENU_SETTINGS_FIRST_PLAYER_O
+    wxID_MENU_FILE_START_SIMULATION,
+    wxID_MENU_HELP_ABOUT,
+    wxID_MENU_SETTINGS_PLAYER1_X,
+    wxID_MENU_SETTINGS_PLAYER1_O,
+    wxID_MENU_SETTINGS_PLAYER1_HUMAN,
+    wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_RANDOMLY,
+    wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_WITH_LOGIC,
+    wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT,
+    wxID_MENU_SETTINGS_PLAYER2_HUMAN,
+    wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_RANDOMLY,
+    wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_WITH_LOGIC,
+    wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT
 };
 
-class TicTacToe;
 class wxBitmapButton;
 class wxRichTextCtrl;
 class wxPanel;
 class wxGridSizer;
 class wxRichTextAttr;
+
+enum class PlayerType : std::int8_t {
+    Human,
+    Computer_RandomMove,
+    Computer_Logic,
+    Computer_Perfect,
+};
+
+struct Player {
+    Player(const std::string& name_, Symbol sym_, PlayerType type_)
+        : name{name_}, sym{sym_}, type{type_} { }
+    std::string name;
+    Symbol sym;
+    PlayerType type;
+};
 
 class TicTacToeMainFrame : public wxFrame {
 
@@ -58,26 +84,34 @@ private:
     wxMenu* m_menuHelp;
     wxStatusBar* m_statusBar;
 
+
+
     // for game play
-    bool m_xPlaysFirst;
-    bool m_xTurn;
     bool m_gameGoing;
-    bool m_clicked[9];
+    bool m_occupied[9];
+    bool m_player1Turn;
+    Player m_player1;
+    Player m_player2;
     std::unique_ptr<TicTacToe> m_logic;
 
     // Handlers for MainFrame events.
     void OnClickButton(wxCommandEvent& event);
     void OnNewGame(wxCommandEvent& event);
-    void OnChangeFirstPlayer(wxCommandEvent& event);
+    void OnChangePlayerSymbols(wxCommandEvent& event);
     void OnClearTextArea(wxCommandEvent& event);
+    void OnAbout(wxCommandEvent& event);
+    void OnChangePlayerType(wxCommandEvent& event);
+    void OnStartSimulation(wxCommandEvent& event);
 
     // Private member functions
     void create_new_game();
     void create_bitmap_buttons(wxGridSizer* gSizer);
     void create_menu();
     void write_text_header();
-    void toggle_first_player();
+    void update_status_bar_for_side_to_move();
     void toggle_side_to_move();
+    void run_engine();
+    bool is_game_ended();
 
     // Rich text attributes
     static const wxRichTextAttr RedText;
