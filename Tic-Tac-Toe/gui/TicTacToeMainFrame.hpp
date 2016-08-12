@@ -84,8 +84,6 @@ private:
     wxMenu* m_menuHelp;
     wxStatusBar* m_statusBar;
 
-
-
     // for game play
     bool m_gameGoing;
     bool m_occupied[9];
@@ -110,7 +108,7 @@ private:
     void write_text_header();
     void update_status_bar_for_side_to_move();
     void toggle_side_to_move();
-    void run_engine();
+    void run_game();
     bool is_game_ended();
 
     // Rich text attributes

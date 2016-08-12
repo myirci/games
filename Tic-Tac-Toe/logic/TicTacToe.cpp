@@ -187,12 +187,18 @@ int TicTacToe::MakeAPerfectMove(Symbol s, bool max_player) {
         return -1;
     }
 
-    int score_idx{-1};
+    // define a score for every possible move
     std::vector<int> scores(empty_squares.size());
+    int score_idx{-1};
     if(max_player) {
         for(int i = 0; i < empty_squares.size(); ++i) {
+            // make the move
             b[empty_squares[i]] = (s == Symbol::X ? Square::x : Square::o);
+
+            //
             scores[i] = min_value(b, (s == Symbol::X ? Square::o : Square::x));
+
+            // unmake the move
             b[empty_squares[i]] = Square::e;
         }
 
