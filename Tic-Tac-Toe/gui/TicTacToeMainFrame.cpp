@@ -184,7 +184,7 @@ void TicTacToeMainFrame::create_new_game() {
     m_gameGoing = true;
 
     // run the game
-    run_engine();
+    run_game();
 }
 
 void TicTacToeMainFrame::write_text_header() {
@@ -246,7 +246,7 @@ void TicTacToeMainFrame::OnClickButton(wxCommandEvent& event) {
     m_player1Turn = !m_player1Turn;
     update_status_bar_for_side_to_move();
 
-    run_engine();
+    run_game();
 }
 
 void TicTacToeMainFrame::OnNewGame(wxCommandEvent& event) {
@@ -346,7 +346,7 @@ void TicTacToeMainFrame::OnAbout(wxCommandEvent& event) {
     m_richText->Refresh();
 }
 
-void TicTacToeMainFrame::run_engine() {
+void TicTacToeMainFrame::run_game() {
 
     // if human player's turn wait for the move
     if(m_player1Turn && m_player1.type == PlayerType::Human) return;
@@ -393,7 +393,7 @@ void TicTacToeMainFrame::run_engine() {
 
     if(m_player1.type != PlayerType::Human && m_player2.type != PlayerType::Human) {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        run_engine();
+        run_game();
     }
 }
 
