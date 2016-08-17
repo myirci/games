@@ -41,29 +41,7 @@ bool TicTacToe::Empty() const {
 }
 
 Result TicTacToe::GetResult() const {
-
-    // check rows
-    for(int i = 0; i < 9; i+=3)
-        if(m_board[0 + i] == m_board[1 + i] && m_board[0 + i] == m_board[2 + i] && m_board[0 + i] != Square::e)
-            return (m_board[0 + i] == Square::x ? Result::x_win : Result::o_win);
-
-    // check cols
-    for(int i = 0; i < 3; ++i)
-        if(m_board[0 + i] == m_board[3 + i] && m_board[0 + i] == m_board[6 + i] && m_board[0 + i] != Square::e)
-            return (m_board[0 + i] == Square::x ? Result::x_win : Result::o_win);
-
-    // check diagonals
-    if(m_board[0] == m_board[4] && m_board[0] == m_board[8] && m_board[0] != Square::e)
-        return (m_board[0] == Square::x ? Result::x_win : Result::o_win);
-    if(m_board[2] == m_board[4] && m_board[2] == m_board[6] && m_board[2] != Square::e)
-        return (m_board[2] == Square::x ? Result::x_win : Result::o_win);
-
-    // check if game is ended
-    for(int i = 0; i < 9; ++i)
-        if(m_board[i] == Square::e)
-            return Result::no_result;
-
-    return Result::draw;
+    return get_result(m_board);
 }
 
 void TicTacToe::Clear() {
@@ -183,91 +161,114 @@ int TicTacToe::MakeAPerfectMove(Symbol s, bool max_player) {
             empty_squares.push_back(i);
 
     if(empty_squares.empty()) {
-        std::cerr << "Already a terminal node" << std::endl;
+        std::cerr << "Already a terminal state!" << std::endl;
         return -1;
     }
 
-    // define a score for every possible move
+    Square sq = (s == Symbol::X ? Square::x : Square::o);
     std::vector<int> scores(empty_squares.size());
-    int score_idx{-1};
+
     if(max_player) {
         for(int i = 0; i < empty_squares.size(); ++i) {
-            // make the move
-            b[empty_squares[i]] = (s == Symbol::X ? Square::x : Square::o);
-
-            //
+            b[empty_squares[i]] = sq;
             scores[i] = min_value(b, (s == Symbol::X ? Square::o : Square::x));
-
-            // unmake the move
-            b[empty_squares[i]] = Square::e;
-        }
-
-        int max_score{-2};
-        for(int i = 0; i < empty_squares.size(); ++i) {
-            if(scores[i] > max_score) {
-                max_score = scores[i];
-                score_idx = i;
+            b[i] = Square::e;
+            if(scores[i] > 0) { // first winning move
+                m_board[empty_squares[i]] = sq;
+                return empty_squares[i];
             }
         }
     }
     else {
         for(int i = 0; i < empty_squares.size(); ++i) {
-            b[empty_squares[i]] = (s == Symbol::X ? Square::x : Square::o);
+            b[empty_squares[i]] = sq;
             scores[i] = max_value(b, (s == Symbol::X ? Square::o : Square::x));
-            b[empty_squares[i]] = Square::e;
-        }
-
-        int min_score{2};
-        for(int i = 0; i < empty_squares.size(); ++i) {
-            if(scores[i] > min_score) {
-                min_score = scores[i];
-                score_idx = i;
+            b[i] = Square::e;
+            if(scores[i] < 0) { // first winning move
+                m_board[empty_squares[i]] = sq;
+                return empty_squares[i];
             }
         }
     }
 
-    m_board[empty_squares[score_idx]] = (s == Symbol::X ? Square::x : Square::o);
-    return empty_squares[score_idx];
+    for(int i = 0; i < empty_squares.size(); ++i) {
+        if(scores[i] == 0) { // first drawing move
+            m_board[empty_squares[i]] = sq;
+            return empty_squares[i];
+        }
+    }
+    // else a make the fist move, it is losing though
+    m_board[empty_squares[0]] = sq;
+    return empty_squares[0];
+
 }
 
 int TicTacToe::max_value(Board& b, Square s) {
 
     // if terminal node is reached
-    Result r = GetResult();
-    if(r == Result::x_win) return 1;
-    else if(r == Result::o_win) return -1;
-    else if(r == Result::draw) return 0;
+    Result r = get_result(b);
+    if(r != Result::no_result) {
+        if(r == Result::x_win)      return 1;
+        else if(r == Result::o_win) return -1;
+        else if(r == Result::draw)  return 0;
+    }
 
-    // else
     int score{-1};
+    Square sq = (s == Square::x ? Square::o : Square::x);
     for(int i = 0; i < 9; ++i) {
         if(b[i] == Square::e) {
             b[i] = s;
-            score = std::max(score, min_value(b, (s == Square::x ? Square::o : Square::x)));
+            score = std::max(score, min_value(b, sq));
             b[i] = Square::e;
         }
     }
+    return score;
 }
 
 int TicTacToe::min_value(Board& b, Square s) {
 
     // if terminal node is reached
-    Result r = GetResult();
-    if(r == Result::x_win) return 1;
-    else if(r == Result::o_win) return -1;
-    else if(r == Result::draw) return 0;
+    Result r = get_result(b);
+    if(r != Result::no_result) {
+        if(r == Result::x_win)      return 1;
+        else if(r == Result::o_win) return -1;
+        else if(r == Result::draw)  return 0;
+    }
 
     int score{1};
+    Square sq = (s == Square::x ? Square::o : Square::x);
     for(int i = 0; i < 9; ++i) {
         if(b[i] == Square::e) {
             b[i] = s;
-            score = std::min(score, max_value(b, (s == Square::x ? Square::o : Square::x)));
+            score = std::min(score, max_value(b, sq));
             b[i] = Square::e;
         }
     }
+    return score;
 }
 
+Result TicTacToe::get_result(const Board& b) const {
 
+    // check rows
+    for(int i = 0; i < 9; i+=3)
+        if(b[0 + i] == b[1 + i] && b[0 + i] == b[2 + i] && b[0 + i] != Square::e)
+            return (b[0 + i] == Square::x ? Result::x_win : Result::o_win);
 
+    // check cols
+    for(int i = 0; i < 3; ++i)
+        if(b[0 + i] == b[3 + i] && b[0 + i] == b[6 + i] && b[0 + i] != Square::e)
+            return (b[0 + i] == Square::x ? Result::x_win : Result::o_win);
 
+    // check diagonals
+    if(b[0] == b[4] && b[0] == b[8] && b[0] != Square::e)
+        return (b[0] == Square::x ? Result::x_win : Result::o_win);
+    if(b[2] == b[4] && b[2] == b[6] && b[2] != Square::e)
+        return (b[2] == Square::x ? Result::x_win : Result::o_win);
 
+    // check if game is ended
+    for(int i = 0; i < 9; ++i)
+        if(b[i] == Square::e)
+            return Result::no_result;
+
+    return Result::draw;
+}

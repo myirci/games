@@ -62,4 +62,5 @@ private:
     void print_board() const;
     int max_value(Board& b, Square s);
     int min_value(Board& b, Square s);
+    Result get_result(const Board& b) const;
 };
