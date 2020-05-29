@@ -1,14 +1,10 @@
 # games
-hobby games
+hobby games, testing environment for different search algorithms for game play. 
 
-Tetris project is not designed/coded by me. It's based on an example wxWdigets code. 
-Long time a go, once I coded an automatic tetris player. The code for that project is
-quite old, it was coded in Borland C++. One day, I will integrate automatic tetris player into this project
-and refine the user interface.
+This repository contains three sepearate projects:
 
-The other two projects (XOX and Eightnumber projects) are designed and coded by me. They are not finished yet
-but they can be playable. Eightnumber project has an auto solver using different tree search thecniques. I will 
-integrate a more smart automated XOX player soon. 
+1) Tic-Tac-Toe: C++, WxWidgets
 
-REUIREMENTS:
-  - wxWidgets
+2) Eight Number: C++, WxWidgets
+
+3) Tetris: Processing, Java
