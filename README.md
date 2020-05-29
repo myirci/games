@@ -1,5 +1,5 @@
 # games
-hobby games, testing environment for different search algorithms for game play. 
+Hobby games, testing environment for different search algorithms for game play. 
 
 This repository contains three sepearate projects:
 
