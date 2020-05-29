@@ -7,12 +7,13 @@
  *
 */
 
+#include "TicTacToeMainFrame.hpp"
+#include "SimulationDialog.hpp"
+
 #include <cstdint>
 #include <sstream>
 #include <chrono>
 #include <thread>
-#include "TicTacToeMainFrame.hpp"
-#include "../utility/Utility.hpp"
 
 #include <wx/bitmap.h>
 #include <wx/image.h>
@@ -41,8 +42,9 @@ BEGIN_EVENT_TABLE(TicTacToeMainFrame, wxFrame)
     EVT_BUTTON(wxID_BUTTON_7, TicTacToeMainFrame::OnClickButton)
     EVT_BUTTON(wxID_BUTTON_8, TicTacToeMainFrame::OnClickButton)
     EVT_MENU(wxID_MENU_FILE_NEW, TicTacToeMainFrame::OnNewGame)
-    EVT_MENU(wxID_MENU_FILE_START_SIMULATION, TicTacToeMainFrame::OnStartSimulation)
+    EVT_MENU(wxID_MENU_FILE_SIMULATION, TicTacToeMainFrame::OnStartSimulation)
     EVT_MENU(wxID_MENU_FILE_CLEAR_TEXT_AREA, TicTacToeMainFrame::OnClearTextArea)
+    EVT_MENU(wxID_MENU_FILE_CLEAR_SCORE, TicTacToeMainFrame::OnClearScore)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_X, TicTacToeMainFrame::OnChangePlayerSymbols)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_O, TicTacToeMainFrame::OnChangePlayerSymbols)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_RANDOMLY, TicTacToeMainFrame::OnChangePlayerType)
@@ -55,17 +57,31 @@ BEGIN_EVENT_TABLE(TicTacToeMainFrame, wxFrame)
 END_EVENT_TABLE()
 
 const wxRichTextAttr TicTacToeMainFrame::RedText = wxRichTextAttr(wxTextAttr(*wxRED));
+const wxRichTextAttr TicTacToeMainFrame::BlueText = wxRichTextAttr(wxTextAttr(*wxBLUE));
 
-TicTacToeMainFrame::TicTacToeMainFrame(wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style)
-    : wxFrame(parent, id, title, pos, size, style), m_logic{new TicTacToe()}, m_gameGoing{false},
-      m_player1Turn{true}, m_player1{"Player-1", Symbol::X, PlayerType::Human },
-      m_player2{"Player-2", Symbol::O, PlayerType::Human} {
-
+TicTacToeMainFrame::TicTacToeMainFrame(
+        wxWindow* parent,
+        wxWindowID id,
+        const wxString& title,
+        const wxPoint& pos,
+        const wxSize& size,
+        long style) :
+    wxFrame(parent, id, title, pos, size, style),
+    m_logic{std::make_unique<TicTacToe>()},
+    m_score{std::make_unique<GameScore>()},
+    m_gameGoing{false},
+    m_player1Turn{true},
+    m_player1{"Player-1", Symbol::X, PlayerType::Human },
+    m_player2{"Player-2", Symbol::O, PlayerType::Human }
+{
     // set the minimum size of the frame
-    this->SetMinSize(wxSize(720,360));
+    this->SetMinSize(wxSize(740, 450));
+
+    // set the max size of the frame
+    this->SetMaxSize(wxSize(740,450));
 
     // create the bitmaps
-    m_bitmaps[0] = wxBitmap(wxT("../resources/e3.png"), wxBITMAP_TYPE_ANY);
+    m_bitmaps[0] = wxBitmap(wxT("../resources/e2.png"), wxBITMAP_TYPE_ANY);
     m_bitmaps[1] = wxBitmap(wxT("../resources/x.png"), wxBITMAP_TYPE_ANY);
     m_bitmaps[2] = wxBitmap(wxT("../resources/o.png"), wxBITMAP_TYPE_ANY);
 
@@ -113,28 +129,30 @@ TicTacToeMainFrame::TicTacToeMainFrame(wxWindow* parent, wxWindowID id, const wx
     create_new_game();
 }
 
-void TicTacToeMainFrame::create_bitmap_buttons(wxGridSizer* gSizer) {
-
+void TicTacToeMainFrame::create_bitmap_buttons(wxGridSizer* gSizer)
+{
     unsigned int ids[9] = {
         wxID_BUTTON_0, wxID_BUTTON_1, wxID_BUTTON_2,
         wxID_BUTTON_3, wxID_BUTTON_4, wxID_BUTTON_5,
         wxID_BUTTON_6, wxID_BUTTON_7, wxID_BUTTON_8
     };
 
-    for(size_t i = 0; i < 9; ++i) {
+    for(size_t i = 0; i < 9; ++i)
+    {
         m_buttons[i] = new wxBitmapButton(m_panel, ids[i], m_bitmaps[0], wxDefaultPosition, wxSize(102,102), wxBU_AUTODRAW);
         gSizer->Add(m_buttons[i], 0, wxALL, 5);
     }
 }
 
-void TicTacToeMainFrame::create_menu() {
-
+void TicTacToeMainFrame::create_menu()
+{
     m_menubar = new wxMenuBar(0);
     m_menuFile = new wxMenu();
 
     m_menuFile->Append(wxID_MENU_FILE_NEW, wxString(wxT("New game")));
-    m_menuFile->Append(wxID_MENU_FILE_START_SIMULATION, wxString("Start simulation"));
+    m_menuFile->Append(wxID_MENU_FILE_SIMULATION, wxString("Simulation"));
     m_menuFile->Append(wxID_MENU_FILE_CLEAR_TEXT_AREA, wxString("Clear text area"));
+    m_menuFile->Append(wxID_MENU_FILE_CLEAR_SCORE, wxString("Clear score"));
     m_menubar->Append(m_menuFile, wxT("File"));
 
     m_menuSettings = new wxMenu();
@@ -143,11 +161,17 @@ void TicTacToeMainFrame::create_menu() {
     playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_RANDOMLY, wxT("Computer plays randomly"));
     playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_WITH_LOGIC, wxT("Computer plays with logic"));
     playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT, wxT("Computer plays perfect"));
+    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MINMAX, wxT("Computer plays with minimax algorithm"));
+    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS, wxT("Computer plays with monte-carlo-tree-search algorithm"));
+
     wxMenu* playerTwoMenu = new wxMenu();
     playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_HUMAN, wxT("Human"));
     playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_RANDOMLY, wxT("Computer plays randomly"));
     playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_WITH_LOGIC, wxT("Computer plays with logic"));
     playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT, wxT("Computer plays perfect"));
+    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINMAX, wxT("Computer plays with minimax algorithm"));
+    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS, wxT("Computer plays with monte-carlo-tree-search algorithm"));
+
     m_menuSettings->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_X, wxT("Player1 is X"));
     m_menuSettings->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_O, wxT("Player1 is O"));
     m_menuSettings->AppendSeparator();
@@ -162,10 +186,11 @@ void TicTacToeMainFrame::create_menu() {
     this->SetMenuBar(m_menubar);
 }
 
-void TicTacToeMainFrame::create_new_game() {
-
+void TicTacToeMainFrame::create_new_game()
+{
     // clear the clicked buttons
-    for(size_t i = 0; i < 9; ++i) {
+    for(size_t i = 0; i < 9; ++i)
+    {
         m_buttons[i]->SetBitmap(m_bitmaps[0]);
         m_occupied[i] = false;
     }
@@ -187,8 +212,8 @@ void TicTacToeMainFrame::create_new_game() {
     run_game();
 }
 
-void TicTacToeMainFrame::write_text_header() {
-
+void TicTacToeMainFrame::write_text_header()
+{
     m_richText->BeginBold();
     m_richText->BeginStyle(RedText);
     m_richText->DoWriteText(wxString(GetDateAndTime()));
@@ -199,15 +224,17 @@ void TicTacToeMainFrame::write_text_header() {
     m_richText->Refresh();
 }
 
-void TicTacToeMainFrame::update_status_bar_for_side_to_move() {
-
+void TicTacToeMainFrame::update_status_bar_for_side_to_move()
+{
     std::string str{""};
-    if(m_player1Turn) {
+    if(m_player1Turn)
+    {
         str += "Side to move: Player-1 (";
         str += (m_player1.sym == Symbol::X ? "X" : "O");
         str += ")";
     }
-    else {
+    else
+    {
         str += "Side to move: Player-2 (";
         str += (m_player2.sym == Symbol::X ? "X" : "O");
         str += ")";
@@ -218,19 +245,33 @@ void TicTacToeMainFrame::update_status_bar_for_side_to_move() {
 void TicTacToeMainFrame::OnClickButton(wxCommandEvent& event) {
 
     // only if we have a game
-    if(!m_gameGoing) return;
+    if(!m_gameGoing)
+    {
+        return;
+    }
 
     // check the clicked square, it must be an empty square
     size_t clicked_pos = static_cast<size_t>(event.GetId() - 1000);
-    if(m_occupied[clicked_pos]) return;
+    if(m_occupied[clicked_pos])
+    {
+        return;
+    }
 
     Symbol current_sym;
-    if(m_player1Turn) {
-        if (m_player1.type != PlayerType::Human) return;
+    if(m_player1Turn)
+    {
+        if (m_player1.type != PlayerType::Human)
+        {
+            return;
+        }
         current_sym = m_player1.sym;
     }
-    else {
-        if (m_player2.type != PlayerType::Human) return;
+    else
+    {
+        if (m_player2.type != PlayerType::Human)
+        {
+          return;
+        }
         current_sym = m_player2.sym;
     }
     Square current_square = (current_sym == Symbol::X ? Square::x : Square::o);
@@ -241,7 +282,9 @@ void TicTacToeMainFrame::OnClickButton(wxCommandEvent& event) {
 
     // check wheter the game is ended
     if(is_game_ended())
+    {
         return;
+    }
 
     m_player1Turn = !m_player1Turn;
     update_status_bar_for_side_to_move();
@@ -249,31 +292,80 @@ void TicTacToeMainFrame::OnClickButton(wxCommandEvent& event) {
     run_game();
 }
 
-void TicTacToeMainFrame::OnNewGame(wxCommandEvent& event) {
+void TicTacToeMainFrame::OnNewGame(wxCommandEvent& event)
+{
     create_new_game();
 }
 
-void TicTacToeMainFrame::OnStartSimulation(wxCommandEvent& event) {
-    for(int i = 0; i < 25; ++i)
-        create_new_game();
+void TicTacToeMainFrame::OnStartSimulation(wxCommandEvent& event)
+{
+    if(m_player1.type == PlayerType::Human || m_player2.type == PlayerType::Human)
+    {
+        m_richText->BeginStyle(BlueText);
+        m_richText->AddParagraph("To run a simulation, please select the type of the players using the Settings menu. Note that none of the players can be a human for the simulation!");
+        m_richText->EndStyle();
+        m_richText->Refresh();
+        return;
+    }
+
+    auto simDialog = new SimulationDialog(this, wxT("Simulation"));
+
+    bool sim_in_gui{false};
+    long num_sim{0};
+
+    if(simDialog->ShowModal() == wxID_OK)
+    {
+        sim_in_gui = simDialog->simulate_in_gui();
+        num_sim = simDialog->get_num_simulations();
+    }
+    simDialog->Destroy();
+
+    if(num_sim == 0)
+    {
+        return;
+    }
+
+    if(sim_in_gui)
+    {
+        for(int i = 0; i < num_sim; ++i)
+        {
+            create_new_game();
+        }
+    }
+    else
+    {
+        auto res = Simulate(num_sim, m_player1, m_player2);
+        std::string str = m_player1.sym == Symbol::X
+                ? "Player-1 (X), Player-2 (O)"
+                : "Player_1 (O), Player_2 (X)";
+        std::cout << str << std::endl;
+        res->print();
+
+        m_richText->AddParagraph(str);
+        m_richText->AddParagraph(res->get_res());
+        m_richText->Refresh();
+    }
 }
 
-void TicTacToeMainFrame::OnChangePlayerSymbols(wxCommandEvent& event) {
-
-    if(m_gameGoing && !m_logic->Empty()) {
+void TicTacToeMainFrame::OnChangePlayerSymbols(wxCommandEvent& event)
+{
+    if(m_gameGoing && !m_logic->Empty())
+    {
         m_richText->BeginStyle(RedText);
         m_richText->AddParagraph(wxString("You can't change the symbols while a game is being played"));
         m_richText->EndStyle();
         return;
     }
 
-    if(event.GetId() == wxID_MENU_SETTINGS_PLAYER1_X) {
+    if(event.GetId() == wxID_MENU_SETTINGS_PLAYER1_X)
+    {
         m_player1.sym = Symbol::X;
         m_player2.sym = Symbol::O;
         m_richText->AddParagraph(wxString("Player-1 symbol: X"));
         m_richText->AddParagraph(wxString("Player-2 symbol: O"));
     }
-    else if(event.GetId() == wxID_MENU_SETTINGS_PLAYER1_O) {
+    else if(event.GetId() == wxID_MENU_SETTINGS_PLAYER1_O)
+    {
         m_player1.sym = Symbol::O;
         m_player2.sym = Symbol::X;
         m_richText->AddParagraph(wxString("Player-1 symbol: O"));
@@ -283,8 +375,10 @@ void TicTacToeMainFrame::OnChangePlayerSymbols(wxCommandEvent& event) {
     m_richText->Refresh();
 }
 
-void TicTacToeMainFrame::OnChangePlayerType(wxCommandEvent& event) {
-    switch (event.GetId()) {
+void TicTacToeMainFrame::OnChangePlayerType(wxCommandEvent& event)
+{
+    switch (event.GetId())
+    {
     case wxID_MENU_SETTINGS_PLAYER1_HUMAN:
         m_player1.type = PlayerType::Human;
         m_richText->AddParagraph("Player-1 is set to: Human");
@@ -324,21 +418,24 @@ void TicTacToeMainFrame::OnChangePlayerType(wxCommandEvent& event) {
     m_richText->Refresh();
 }
 
-void TicTacToeMainFrame::OnClearTextArea(wxCommandEvent& event) {
+void TicTacToeMainFrame::OnClearTextArea(wxCommandEvent& event)
+{
     m_richText->Clear();
     write_text_header();
 }
 
-void TicTacToeMainFrame::OnAbout(wxCommandEvent& event) {
+void TicTacToeMainFrame::OnClearScore(wxCommandEvent& event)
+{
+    m_score->clear();
+    m_score->print();
+}
 
+void TicTacToeMainFrame::OnAbout(wxCommandEvent& event)
+{
     m_richText->AddParagraph("**********************************************");
     m_richText->BeginItalic();
-    m_richText->AddParagraph(wxString("Tic-Tac-Toe is a zero-sum two player game with perfect infomation"));
-    m_richText->AddParagraph(wxString("There are two modes:"));
-    m_richText->BeginStandardBullet(wxString("Osman"), 25, 25);
-    m_richText->AddParagraph(wxString("Two players can play each other"));
-    m_richText->AddParagraph(wxString("Player can play with a computer. See the settings for coputer settings."));
-    m_richText->EndStandardBullet();
+    m_richText->AddParagraph(wxString("Tic-Tac-Toe is a zero-sum two player game with perfect information"));
+    m_richText->AddParagraph(wxString("Player types (human or computer) can be selected using the settings menu."));
     m_richText->AddParagraph(wxString("Developped by Murat Yirci, copyright 2016"));
     m_richText->AddParagraph(wxString("Contact: myirci@gmail.com"));
     m_richText->EndItalic();
@@ -346,83 +443,79 @@ void TicTacToeMainFrame::OnAbout(wxCommandEvent& event) {
     m_richText->Refresh();
 }
 
-void TicTacToeMainFrame::run_game() {
-
+void TicTacToeMainFrame::run_game()
+{
     // if human player's turn wait for the move
-    if(m_player1Turn && m_player1.type == PlayerType::Human) return;
-    else if(!m_player1Turn && m_player2.type == PlayerType::Human) return;
+    if((m_player1Turn && m_player1.type == PlayerType::Human) ||
+       (!m_player1Turn && m_player2.type == PlayerType::Human))
+    {
+        return;
+    }
 
     int sq{-1};
-    if(m_player1Turn) {
-        if(m_player1.type == PlayerType::Computer_RandomMove) {
-            sq = m_logic->MakeARandomMove(m_player1.sym);
-        }
-        else if(m_player1.type == PlayerType::Computer_Logic) {
-            sq = m_logic->MakeALogicalMove(m_player1.sym);
-        }
-        else if(m_player1.type == PlayerType::Computer_Perfect) {
-            // Player1 is the Max player
-            sq = m_logic->MakeAPerfectMove(m_player1.sym, true);
-        }
-        int idx = (m_player1.sym == Symbol::X ? 1 : 2);
-        m_buttons[sq]->SetBitmap(m_bitmaps[idx]);
-        m_occupied[sq] = true;
+    Player& side_to_move = m_player1Turn ? m_player1 : m_player2;
+
+    if(side_to_move.type == PlayerType::Computer_RandomMove)
+    {
+        sq = m_logic->MakeARandomMove(side_to_move.sym);
     }
-    else {
-        if(m_player2.type == PlayerType::Computer_RandomMove) {
-            sq = m_logic->MakeARandomMove(m_player2.sym);
-        }
-        else if(m_player2.type == PlayerType::Computer_Logic) {
-            sq = m_logic->MakeALogicalMove(m_player2.sym);
-        }
-        else if(m_player2.type == PlayerType::Computer_Perfect) {
-            // Player2 is the Min player
-            sq = m_logic->MakeAPerfectMove(m_player2.sym, false);
-        }
-        int idx = (m_player2.sym == Symbol::X ? 1 : 2);
-        m_buttons[sq]->SetBitmap(m_bitmaps[idx]);
-        m_occupied[sq] = true;
+    else if(side_to_move.type == PlayerType::Computer_Logic)
+    {
+        sq = m_logic->MakeALogicalMove(side_to_move.sym);
     }
+    else if(side_to_move.type == PlayerType::Computer_Perfect)
+    {
+        // Player1 is the Max player
+        // sq = m_logic->MakeAPerfectMove(side_to_move.sym, true);
+    }
+    int idx = (side_to_move.sym == Symbol::X ? 1 : 2);
+    m_buttons[sq]->SetBitmap(m_bitmaps[idx]);
+    m_occupied[sq] = true;
 
     // check whether the game is ended
     if(is_game_ended())
+    {
         return;
+    }
 
     m_player1Turn = !m_player1Turn;
     update_status_bar_for_side_to_move();
 
-    if(m_player1.type != PlayerType::Human && m_player2.type != PlayerType::Human) {
+    if(m_player1.type != PlayerType::Human && m_player2.type != PlayerType::Human)
+    {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         run_game();
     }
 }
 
-bool TicTacToeMainFrame::is_game_ended() {
-
-    static int x_win = 0;
-    static int o_win = 0;
-    static int draw = 0;
-
+bool TicTacToeMainFrame::is_game_ended()
+{
     // check the game result
     Result r = m_logic->GetResult();
     if(r == Result::no_result)
+    {
         return false;
+    }
 
     std::string str{"Game is ended"};
-    if(r == Result::x_win) {
+    if(r == Result::x_win)
+    {
         str += (m_player1.sym == Symbol::X ? ", Player-1" : ", Player_2");
         str += " (X) wins!";
-        ++x_win;
+        m_score->num_x_wins++;
     }
-    else if(r == Result::o_win) {
+    else if(r == Result::o_win)
+    {
         str += (m_player1.sym == Symbol::O ? ", Player-1" : ", Player_2");
         str += " (O) wins!";
-        ++o_win;
+        m_score->num_o_wins++;
     }
-    else {
+    else
+    {
         str += " in a draw.";
-        ++draw;
+        m_score->num_draws++;
     }
+
     m_statusBar->SetStatusText(wxString(str));
     m_richText->BeginBold();
     m_richText->AddParagraph(wxString(str));
@@ -430,11 +523,7 @@ bool TicTacToeMainFrame::is_game_ended() {
     m_richText->Refresh();
     m_gameGoing = false;
 
-    std::cout << "x-win: " << x_win << std::endl;
-    std::cout << "o-win: " << o_win << std::endl;
-    std::cout << "draw: " << draw << std::endl;
-    std::cout << "-------------------" << std::endl;
-
+    m_score->print();
 
     return true;
 }

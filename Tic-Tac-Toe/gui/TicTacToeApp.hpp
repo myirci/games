@@ -11,7 +11,8 @@
 
 #include <wx/app.h>
 
-class TicTacToeApp : public wxApp {
+class TicTacToeApp : public wxApp
+{
 public:
     bool OnInit();
 };

@@ -1,20 +1,20 @@
-project(Tic-Tac-Toe)
-cmake_minimum_required(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
-add_definitions(-std=c++11)
-set(CMAKE_BUILD_TYPE Debug)
+PROJECT(Tic-Tac-Toe)
 
-aux_source_directory(./gui SOURCES)
-aux_source_directory(./logic SOURCES)
-aux_source_directory(./utility SOURCES)
+ADD_DEFINITIONS(-std=c++14)
+SET(CMAKE_BUILD_TYPE Debug)
 
-find_package(wxWidgets REQUIRED core richtext)
-if(wxWidgets_FOUND)
+AUX_SOURCE_DIRECTORY(./gui SOURCES)
+AUX_SOURCE_DIRECTORY(./logic SOURCES)
+AUX_SOURCE_DIRECTORY(./utility SOURCES)
+
+FIND_PACKAGE(wxWidgets REQUIRED core richtext)
+IF(wxWidgets_FOUND)
     include(${wxWidgets_USE_FILE})
     set(LINK_LIBS ${LINK_LIBS} ${wxWidgets_LIBRARIES})
     message(STATUS ${wxWidgets_LIBRARIES})
-endif(wxWidgets_FOUND)
+ENDIF(wxWidgets_FOUND)
 
-add_executable(${PROJECT_NAME} ${SOURCES})
-target_link_libraries(${PROJECT_NAME} ${LINK_LIBS})
-
+ADD_EXECUTABLE(${PROJECT_NAME} ${SOURCES})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${LINK_LIBS})

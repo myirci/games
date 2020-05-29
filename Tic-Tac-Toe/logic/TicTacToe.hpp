@@ -13,25 +13,25 @@
 #include <vector>
 #include <cstdint>
 
-enum class Result : std::int8_t {
+enum class Result : std::int8_t
+{
   no_result,
   x_win,
   o_win,
   draw
 };
 
-enum class Square : std::int8_t {
+enum class Square : std::int8_t
+{
     o = -1,
     e,
     x
 };
 
-enum class Symbol : std::int8_t {
-    X,
-    O
-};
+enum class Symbol : std::int8_t;
 
-class TicTacToe {
+class TicTacToe
+{
 public:
 
     using Board = std::array <Square, 9>;
@@ -63,4 +63,5 @@ private:
     int max_value(Board& b, Square s);
     int min_value(Board& b, Square s);
     Result get_result(const Board& b) const;
+    std::vector<int> get_empty_square_indexes() const;
 };

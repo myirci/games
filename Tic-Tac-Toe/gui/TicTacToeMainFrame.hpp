@@ -9,13 +9,17 @@
 #pragma once
 
 #include "../logic/TicTacToe.hpp"
+#include "../utility/Utility.hpp"
 
 #include <memory>
 #include <array>
 #include <vector>
+#include <iostream>
+
 #include <wx/frame.h>
 
-enum {
+enum
+{
     // Button ids should stay like this!
     wxID_BUTTON_0 = 1000,
     wxID_BUTTON_1,
@@ -28,7 +32,8 @@ enum {
     wxID_BUTTON_8,
     wxID_MENU_FILE_NEW,
     wxID_MENU_FILE_CLEAR_TEXT_AREA,
-    wxID_MENU_FILE_START_SIMULATION,
+    wxID_MENU_FILE_SIMULATION,
+    wxID_MENU_FILE_CLEAR_SCORE,
     wxID_MENU_HELP_ABOUT,
     wxID_MENU_SETTINGS_PLAYER1_X,
     wxID_MENU_SETTINGS_PLAYER1_O,
@@ -36,10 +41,14 @@ enum {
     wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_RANDOMLY,
     wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_WITH_LOGIC,
     wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT,
+    wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MINMAX,
+    wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS,
     wxID_MENU_SETTINGS_PLAYER2_HUMAN,
     wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_RANDOMLY,
     wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_WITH_LOGIC,
-    wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT
+    wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT,
+    wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINMAX,
+    wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MCTS
 };
 
 class wxBitmapButton;
@@ -48,28 +57,14 @@ class wxPanel;
 class wxGridSizer;
 class wxRichTextAttr;
 
-enum class PlayerType : std::int8_t {
-    Human,
-    Computer_RandomMove,
-    Computer_Logic,
-    Computer_Perfect,
-};
 
-struct Player {
-    Player(const std::string& name_, Symbol sym_, PlayerType type_)
-        : name{name_}, sym{sym_}, type{type_} { }
-    std::string name;
-    Symbol sym;
-    PlayerType type;
-};
-
-class TicTacToeMainFrame : public wxFrame {
-
+class TicTacToeMainFrame : public wxFrame
+{
 public:
     TicTacToeMainFrame(wxWindow* parent, wxWindowID id = wxID_ANY,
             const wxString& title = wxT("Tic-Tac-Toe"),
             const wxPoint& pos = wxDefaultPosition,
-            const wxSize& size = wxSize(720, 360),
+            const wxSize& size = wxSize(720, 460),
             long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL);
 private:
 
@@ -91,12 +86,14 @@ private:
     Player m_player1;
     Player m_player2;
     std::unique_ptr<TicTacToe> m_logic;
+    std::unique_ptr<GameScore> m_score;
 
     // Handlers for MainFrame events.
     void OnClickButton(wxCommandEvent& event);
     void OnNewGame(wxCommandEvent& event);
     void OnChangePlayerSymbols(wxCommandEvent& event);
     void OnClearTextArea(wxCommandEvent& event);
+    void OnClearScore(wxCommandEvent& event);
     void OnAbout(wxCommandEvent& event);
     void OnChangePlayerType(wxCommandEvent& event);
     void OnStartSimulation(wxCommandEvent& event);
@@ -113,6 +110,7 @@ private:
 
     // Rich text attributes
     static const wxRichTextAttr RedText;
+    static const wxRichTextAttr BlueText;
 
     DECLARE_EVENT_TABLE()
 };

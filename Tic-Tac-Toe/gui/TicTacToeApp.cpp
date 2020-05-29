@@ -10,7 +10,8 @@
 #include "TicTacToeApp.hpp"
 #include "TicTacToeMainFrame.hpp"
 
-bool TicTacToeApp::OnInit() {
+bool TicTacToeApp::OnInit()
+{
     TicTacToeMainFrame* frame = new TicTacToeMainFrame(nullptr);
     frame->Show();
     return true;
