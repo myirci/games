@@ -15,7 +15,8 @@
 #include <cstdint>
 #include <unordered_set>
 
-class EightNumber {
+class EightNumber
+{
 public:
     typedef std::array<uint8_t, 9> Board;
     typedef std::pair<Board, std::vector<uint8_t>> Board_and_Moves;

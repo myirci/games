@@ -65,6 +65,7 @@ EightNumberMainFrame::EightNumberMainFrame(
 
     // set the minimum size of the frame
     this->SetMinSize(wxSize(720,360));
+    // this->SetMaxSize(wxSize(720,360));
 
     // create the bitmaps
     m_bitmaps[0] = wxBitmap(wxT("../resources/bos.png"), wxBITMAP_TYPE_ANY);
@@ -183,7 +184,10 @@ void EightNumberMainFrame::create_menu() {
     this->SetMenuBar(m_menubar);
 }
 
-void EightNumberMainFrame::update_status_bar_text() {
+void EightNumberMainFrame::update_status_bar_text()
+{
+    // auto sz = this->GetSize();
+    // m_statusBar->SetStatusText(wxString(std::to_string(sz.GetWidth()) + ", " + std::to_string(sz.GetHeight())));
     m_statusBar->SetStatusText(wxString("Move Counter: " + std::to_string(m_move_count)));
 }
 

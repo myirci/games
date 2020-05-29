@@ -39,13 +39,14 @@ class wxPanel;
 class wxGridSizer;
 class wxRichTextAttr;
 
-class EightNumberMainFrame : public wxFrame {
+class EightNumberMainFrame : public wxFrame
+{
 
 public:
     EightNumberMainFrame(wxWindow* parent, wxWindowID id = wxID_ANY,
             const wxString& title = wxT("Eight Number Puzzle"),
             const wxPoint& pos = wxDefaultPosition,
-            const wxSize& size = wxSize(720, 360),
+            const wxSize& size = wxSize(740, 450),
             long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL);
 private:
 
