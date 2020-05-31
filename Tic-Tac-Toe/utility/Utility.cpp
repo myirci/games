@@ -1,6 +1,6 @@
 /*
  *
- * Murat Yirci - Copyright 2016
+ * Murat Yirci - Copyright 2020
  *
  * Contact: myirci@gmail.com
  *
@@ -42,14 +42,20 @@ std::unique_ptr<GameScore> Simulate(long num_sim, const Player& p1, const Player
             const Player& side_to_move = player1 ? p1 : p2;
             switch (side_to_move.type)
             {
-                case PlayerType::Computer_RandomMove:
-                    sq = logic->MakeARandomMove(side_to_move.sym);
-                    break;
-                case PlayerType::Computer_Logic:
-                    sq = logic->MakeALogicalMove(side_to_move.sym);
-                    break;
-                case PlayerType::Computer_Perfect:
-                    break;
+            case PlayerType::Computer_RandomMove:
+                sq = logic->MakeRandomMove(side_to_move.sym);
+                break;
+            case PlayerType::Computer_Logic:
+                sq = logic->MakeLogicalMove(side_to_move.sym);
+                break;
+            case PlayerType::Computer_Perfect:
+                break;
+            case PlayerType::Computer_Minimax:
+                // Not implemented yet!
+                break;
+            case PlayerType::Computer_MonteCarloTreeSearch:
+                // Not implemented yet!
+                break;
             }
             res = logic->GetResult();
             player1 = !player1;

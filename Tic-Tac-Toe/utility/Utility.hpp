@@ -1,6 +1,6 @@
 /*
  *
- * Murat Yirci - Copyright 2016
+ * Murat Yirci - Copyright 2020
  *
  * Contact: myirci@gmail.com
  *
@@ -53,7 +53,8 @@ enum class PlayerType : std::int8_t
     Computer_RandomMove,
     Computer_Logic,
     Computer_Perfect,
-    Computer_Minmax
+    Computer_Minimax,
+    Computer_MonteCarloTreeSearch
 };
 
 enum class Symbol : std::int8_t
