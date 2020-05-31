@@ -20,22 +20,8 @@ TicTacToe::TicTacToe() : m_board{ Square::e, Square::e, Square::e,
                                   Square::e, Square::e, Square::e,
                                   Square::e, Square::e, Square::e } { }
 
-void TicTacToe::SetBoard(Board&& b)
-{
-    m_board = std::move(b);
-}
 
-void TicTacToe::SetBoard(const Board& b)
-{
-    std::copy(b.begin(), b.end(), m_board.begin());
-}
-
-const TicTacToe::Board& TicTacToe::GetBoard() const
-{
-    return m_board;
-}
-
-void TicTacToe::SetSquare(uint8_t pos, Square s)
+void TicTacToe::SetSquare(int pos, Square s)
 {
     m_board[pos] = s;
 }
@@ -47,7 +33,38 @@ bool TicTacToe::Empty() const
 
 Result TicTacToe::GetResult() const
 {
-    return get_result(m_board);
+    // check rows
+    for(int i = 0; i < 9; i+=3)
+    {
+        if(m_board[i] != Square::e && m_board[i] == m_board[1 + i] && m_board[i] == m_board[2 + i])
+        {
+            return (m_board[i] == Square::x ? Result::x_win : Result::o_win);
+        }
+    }
+
+    // check cols
+    for(int i = 0; i < 3; ++i)
+    {
+        if(m_board[i] != Square::e && m_board[i] == m_board[3 + i] && m_board[i] == m_board[6 + i])
+        {
+            return (m_board[i] == Square::x ? Result::x_win : Result::o_win);
+        }
+    }
+
+    // check diagonals
+    if(m_board[0] != Square::e && m_board[0] == m_board[4] && m_board[0] == m_board[8])
+    {
+        return (m_board[0] == Square::x ? Result::x_win : Result::o_win);
+    }
+
+    if(m_board[2] != Square::e && m_board[2] == m_board[4] && m_board[2] == m_board[6])
+    {
+        return (m_board[2] == Square::x ? Result::x_win : Result::o_win);
+    }
+
+    return std::any_of(m_board.begin(), m_board.end(), [](Square s){ return s == Square::e;})
+        ? Result::no_result
+        : Result::draw;
 }
 
 void TicTacToe::Clear()
@@ -55,33 +72,9 @@ void TicTacToe::Clear()
     std::fill(m_board.begin(), m_board.end(), Square::e);
 }
 
-void TicTacToe::print_board() const {
-
-    for(int i = 0; i < 9; ++i)
-    {
-        if(m_board[i] == Square::x)
-        {
-            std::cout << " x ";
-        }
-        else if(m_board[i] == Square::o)
-        {
-            std::cout << " o ";
-        }
-        else
-        {
-            std::cout << " - ";
-        }
-
-        if(i % 3 == 2)
-        {
-            std::cout << std::endl;
-        }
-    }
-}
-
 int TicTacToe::MakeRandomMove(Symbol s)
 {
-    auto empty_squares = get_empty_square_indexes();
+    auto empty_squares = GetEmptySquareIndexes();
     auto engine = std::default_random_engine(std::random_device()());
     std::uniform_int_distribution<int> dist(0, empty_squares.size()-1);
     int sq = dist(engine);
@@ -201,6 +194,7 @@ int TicTacToe::MakeGameTreeMove(Symbol s, const std::unique_ptr<TicTacToeTree>& 
     return 0;
 }
 
+/*
 int TicTacToe::MakeMiniMaxMove(Symbol s, bool max_player)
 {
     auto empty_squares = get_empty_square_indexes();
@@ -308,44 +302,9 @@ int TicTacToe::min_value(Board& b, Square s)
     }
     return score;
 }
+*/
 
-Result TicTacToe::get_result(const Board& b) const
-{
-    // check rows
-    for(int i = 0; i < 9; i+=3)
-    {
-        if(b[i] != Square::e && b[i] == b[1 + i] && b[i] == b[2 + i])
-        {
-            return (b[i] == Square::x ? Result::x_win : Result::o_win);
-        }
-    }
-
-    // check cols
-    for(int i = 0; i < 3; ++i)
-    {
-        if(b[i] != Square::e && b[i] == b[3 + i] && b[i] == b[6 + i])
-        {
-            return (b[i] == Square::x ? Result::x_win : Result::o_win);
-        }
-    }
-
-    // check diagonals
-    if(b[0] != Square::e && b[0] == b[4] && b[0] == b[8])
-    {
-        return (b[0] == Square::x ? Result::x_win : Result::o_win);
-    }
-
-    if(b[2] != Square::e && b[2] == b[4] && b[2] == b[6])
-    {
-        return (b[2] == Square::x ? Result::x_win : Result::o_win);
-    }
-
-    return std::any_of(b.begin(), b.end(), [](Square s){ return s == Square::e;})
-        ? Result::no_result
-        : Result::draw;
-}
-
-std::vector<int> TicTacToe::get_empty_square_indexes() const
+std::vector<int> TicTacToe::GetEmptySquareIndexes() const
 {
     std::vector<int> empty_squares;
     for(int i = 0; i < m_board.size(); i++)
