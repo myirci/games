@@ -1,6 +1,6 @@
 /*
  *
- * Murat Yirci - Copyright 2016
+ * Murat Yirci - Copyright 2020
  *
  * Contact: myirci@gmail.com
  *
@@ -9,11 +9,13 @@
 
 #include "TicTacToeMainFrame.hpp"
 #include "SimulationDialog.hpp"
+#include "../utility/TicTacToeTree.hpp"
 
 #include <cstdint>
 #include <sstream>
 #include <chrono>
 #include <thread>
+#include <algorithm>
 
 #include <wx/bitmap.h>
 #include <wx/image.h>
@@ -45,6 +47,7 @@ BEGIN_EVENT_TABLE(TicTacToeMainFrame, wxFrame)
     EVT_MENU(wxID_MENU_FILE_SIMULATION, TicTacToeMainFrame::OnStartSimulation)
     EVT_MENU(wxID_MENU_FILE_CLEAR_TEXT_AREA, TicTacToeMainFrame::OnClearTextArea)
     EVT_MENU(wxID_MENU_FILE_CLEAR_SCORE, TicTacToeMainFrame::OnClearScore)
+    EVT_MENU(wxID_MENU_FILE_COMPUTE_COMPLETE_GAME_TREE, TicTacToeMainFrame::OnComputeCompleteGameTree)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_X, TicTacToeMainFrame::OnChangePlayerSymbols)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_O, TicTacToeMainFrame::OnChangePlayerSymbols)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_RANDOMLY, TicTacToeMainFrame::OnChangePlayerType)
@@ -58,6 +61,15 @@ END_EVENT_TABLE()
 
 const wxRichTextAttr TicTacToeMainFrame::RedText = wxRichTextAttr(wxTextAttr(*wxRED));
 const wxRichTextAttr TicTacToeMainFrame::BlueText = wxRichTextAttr(wxTextAttr(*wxBLUE));
+const wxRichTextAttr TicTacToeMainFrame::BlackText = wxRichTextAttr(wxTextAttr(*wxBLACK));
+const wxRichTextAttr TicTacToeMainFrame::LightGreyText = wxRichTextAttr(wxTextAttr(*wxLIGHT_GREY));
+
+const std::string TicTacToeMainFrame::HUMAN_PLAYER = "Human";
+const std::string TicTacToeMainFrame::COMPUTER_PLAYER_RANDOM = "Computer plays randomly";
+const std::string TicTacToeMainFrame::COMPUTER_PLAYER_SIMPLE_LOGIC = "Computer plays with simple logic";
+const std::string TicTacToeMainFrame::COMPUTER_PLAYER_PERFECT_GAME_TREE = "Computer plays perfect using the complete game tree";
+const std::string TicTacToeMainFrame::COMPUTER_PLAYER_PERFECT_MINIMAX = "Computer plays perfect with minimax algorithm";
+const std::string TicTacToeMainFrame::COMPUTER_PLAYER_MCTS = "Computer plays with monte-carlo-tree-search algorithm";
 
 TicTacToeMainFrame::TicTacToeMainFrame(
         wxWindow* parent,
@@ -69,6 +81,7 @@ TicTacToeMainFrame::TicTacToeMainFrame(
     wxFrame(parent, id, title, pos, size, style),
     m_logic{std::make_unique<TicTacToe>()},
     m_score{std::make_unique<GameScore>()},
+    m_gameTree{std::make_unique<TicTacToeTree>()},
     m_gameGoing{false},
     m_player1Turn{true},
     m_player1{"Player-1", Symbol::X, PlayerType::Human },
@@ -153,24 +166,25 @@ void TicTacToeMainFrame::create_menu()
     m_menuFile->Append(wxID_MENU_FILE_SIMULATION, wxString("Simulation"));
     m_menuFile->Append(wxID_MENU_FILE_CLEAR_TEXT_AREA, wxString("Clear text area"));
     m_menuFile->Append(wxID_MENU_FILE_CLEAR_SCORE, wxString("Clear score"));
+    m_menuFile->Append(wxID_MENU_FILE_COMPUTE_COMPLETE_GAME_TREE, wxString("Compute complete game tree"));
     m_menubar->Append(m_menuFile, wxT("File"));
 
     m_menuSettings = new wxMenu();
     wxMenu* playerOneMenu = new wxMenu();
-    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_HUMAN, wxT("Human"));
-    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_RANDOMLY, wxT("Computer plays randomly"));
-    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_WITH_LOGIC, wxT("Computer plays with logic"));
-    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT, wxT("Computer plays perfect"));
-    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MINMAX, wxT("Computer plays with minimax algorithm"));
-    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS, wxT("Computer plays with monte-carlo-tree-search algorithm"));
+    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_HUMAN, HUMAN_PLAYER);
+    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_RANDOMLY, COMPUTER_PLAYER_RANDOM);
+    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_WITH_LOGIC, COMPUTER_PLAYER_SIMPLE_LOGIC);
+    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT, COMPUTER_PLAYER_PERFECT_GAME_TREE);
+    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MINIMAX, COMPUTER_PLAYER_PERFECT_MINIMAX);
+    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS, COMPUTER_PLAYER_MCTS);
 
     wxMenu* playerTwoMenu = new wxMenu();
-    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_HUMAN, wxT("Human"));
-    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_RANDOMLY, wxT("Computer plays randomly"));
-    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_WITH_LOGIC, wxT("Computer plays with logic"));
-    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT, wxT("Computer plays perfect"));
-    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINMAX, wxT("Computer plays with minimax algorithm"));
-    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS, wxT("Computer plays with monte-carlo-tree-search algorithm"));
+    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_HUMAN, HUMAN_PLAYER);
+    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_RANDOMLY, COMPUTER_PLAYER_RANDOM);
+    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_WITH_LOGIC, COMPUTER_PLAYER_SIMPLE_LOGIC);
+    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT, COMPUTER_PLAYER_PERFECT_GAME_TREE);
+    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINIMAX, COMPUTER_PLAYER_PERFECT_MINIMAX);
+    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS, COMPUTER_PLAYER_MCTS);
 
     m_menuSettings->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_X, wxT("Player1 is X"));
     m_menuSettings->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_O, wxT("Player1 is O"));
@@ -201,9 +215,7 @@ void TicTacToeMainFrame::create_new_game()
     update_status_bar_for_side_to_move();
 
     // update text area:
-    m_richText->AddParagraph(wxString("New game started!"));
-    m_richText->AddParagraph(wxString(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"));
-    m_richText->Refresh();
+    add_text(std::vector<std::string>{"New game started!"}, BlueText);
 
     // start the game
     m_gameGoing = true;
@@ -215,12 +227,24 @@ void TicTacToeMainFrame::create_new_game()
 void TicTacToeMainFrame::write_text_header()
 {
     m_richText->BeginBold();
-    m_richText->BeginStyle(RedText);
-    m_richText->DoWriteText(wxString(GetDateAndTime()));
-    m_richText->DoWriteText(wxString("Murat Yirci\nmyirci@gmail.com\nCopyright, 2016"));
+    m_richText->BeginStyle(LightGreyText);
+    m_richText->DoWriteText(GetDateAndTime());
+    m_richText->DoWriteText("Murat Yirci\nmyirci@gmail.com\nCopyright, 2020");
     m_richText->EndStyle();
     m_richText->EndBold();
-    m_richText->AddParagraph(wxString("**********************************************"));
+    m_richText->AddParagraph("**********************************************");
+    m_richText->Refresh();
+}
+
+void TicTacToeMainFrame::add_text(const std::vector<std::string>& v, const wxRichTextAttr& style)
+{
+    m_richText->BeginStyle(BlackText);
+    m_richText->AddParagraph("**********************************************");
+    m_richText->EndStyle();
+    m_richText->BeginStyle(style);
+    std::for_each(v.begin(), v.end(), [&](std::string str){ m_richText->AddParagraph(str);});
+    m_richText->EndStyle();
+    m_richText->AddParagraph("");
     m_richText->Refresh();
 }
 
@@ -301,10 +325,12 @@ void TicTacToeMainFrame::OnStartSimulation(wxCommandEvent& event)
 {
     if(m_player1.type == PlayerType::Human || m_player2.type == PlayerType::Human)
     {
-        m_richText->BeginStyle(BlueText);
-        m_richText->AddParagraph("To run a simulation, please select the type of the players using the Settings menu. Note that none of the players can be a human for the simulation!");
-        m_richText->EndStyle();
-        m_richText->Refresh();
+        std::vector<std::string> str
+        {
+            "To run a simulation, please select the type of the players using the Settings menu.",
+            "Note that none of the players can be a human for the simulation!"
+        };
+        add_text(str, RedText);
         return;
     }
 
@@ -335,25 +361,22 @@ void TicTacToeMainFrame::OnStartSimulation(wxCommandEvent& event)
     else
     {
         auto res = Simulate(num_sim, m_player1, m_player2);
-        std::string str = m_player1.sym == Symbol::X
-                ? "Player-1 (X), Player-2 (O)"
-                : "Player_1 (O), Player_2 (X)";
-        std::cout << str << std::endl;
-        res->print();
-
-        m_richText->AddParagraph(str);
-        m_richText->AddParagraph(res->get_res());
-        m_richText->Refresh();
+        std::vector<std::string> str
+        {
+            m_player1.sym == Symbol::X ? "Player-1 (X), Player-2 (O)" : "Player_1 (O), Player_2 (X)",
+            res->get_res()
+        };
+        add_text(str, BlueText);
     }
 }
 
 void TicTacToeMainFrame::OnChangePlayerSymbols(wxCommandEvent& event)
 {
+    std::vector<std::string> str;
     if(m_gameGoing && !m_logic->Empty())
     {
-        m_richText->BeginStyle(RedText);
-        m_richText->AddParagraph(wxString("You can't change the symbols while a game is being played"));
-        m_richText->EndStyle();
+        str.emplace_back("You can't change the symbols while a game is being played");
+        add_text(str, RedText);
         return;
     }
 
@@ -361,61 +384,88 @@ void TicTacToeMainFrame::OnChangePlayerSymbols(wxCommandEvent& event)
     {
         m_player1.sym = Symbol::X;
         m_player2.sym = Symbol::O;
-        m_richText->AddParagraph(wxString("Player-1 symbol: X"));
-        m_richText->AddParagraph(wxString("Player-2 symbol: O"));
+        str.emplace_back("Player-1 symbol is set to X");
+        str.emplace_back("Player-2 symbol is set to O");
     }
     else if(event.GetId() == wxID_MENU_SETTINGS_PLAYER1_O)
     {
         m_player1.sym = Symbol::O;
         m_player2.sym = Symbol::X;
-        m_richText->AddParagraph(wxString("Player-1 symbol: O"));
-        m_richText->AddParagraph(wxString("Player-2 symbol: X"));
+        str.emplace_back("Player-1 symbol is set to O");
+        str.emplace_back("Player-2 symbol is set to X");
     }
+    add_text(str, BlueText);
     update_status_bar_for_side_to_move();
-    m_richText->Refresh();
 }
 
 void TicTacToeMainFrame::OnChangePlayerType(wxCommandEvent& event)
 {
+    std::vector<std::string> str;
     switch (event.GetId())
     {
     case wxID_MENU_SETTINGS_PLAYER1_HUMAN:
         m_player1.type = PlayerType::Human;
-        m_richText->AddParagraph("Player-1 is set to: Human");
+        str.emplace_back("Player-1 is set to: " + HUMAN_PLAYER);
         break;
     case wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_RANDOMLY:
         m_player1.type = PlayerType::Computer_RandomMove;
-        m_richText->AddParagraph("Player-1 is set to: Compter with random move");
+        str.emplace_back("Player-1 is set to: " + COMPUTER_PLAYER_RANDOM);
         break;
     case wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_WITH_LOGIC:
         m_player1.type = PlayerType::Computer_Logic;
-        m_richText->AddParagraph("Player-1 is set to: Compter with logic");
+        str.emplace_back("Player-1 is set to: " + COMPUTER_PLAYER_SIMPLE_LOGIC);
         break;
     case wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT:
         m_player1.type = PlayerType::Computer_Perfect;
-        m_richText->AddParagraph("Player-1 is set to: Compter with perfect play");
+        str.emplace_back("Player-1 is set to: " + COMPUTER_PLAYER_PERFECT_GAME_TREE);
+        if(!m_gameTree->IsTreeComputed())
+        {
+            m_gameTree->ComputeTree();
+            str.emplace_back("Game tree is computed.");
+        }
+        break;
+    case wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MINIMAX:
+        m_player1.type = PlayerType::Computer_Minimax;
+        str.emplace_back("Player-1 is set to: " + COMPUTER_PLAYER_PERFECT_MINIMAX);
+        break;
+    case wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS:
+        m_player1.type = PlayerType::Computer_MonteCarloTreeSearch;
+        str.emplace_back("Player-1 is set to: " + COMPUTER_PLAYER_MCTS);
         break;
     case wxID_MENU_SETTINGS_PLAYER2_HUMAN:
         m_player2.type = PlayerType::Human;
-        m_richText->AddParagraph("Player-2 is set to: Human");
+        str.emplace_back("Player-2 is set to: " + HUMAN_PLAYER);
         break;
     case wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_RANDOMLY:
         m_player2.type = PlayerType::Computer_RandomMove;
-        m_richText->AddParagraph("Player-2 is set to: Compter with random move");
+        str.emplace_back("Player-2 is set to: " + COMPUTER_PLAYER_RANDOM);
         break;
     case wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_WITH_LOGIC:
         m_player2.type = PlayerType::Computer_Logic;
-        m_richText->AddParagraph("Player-2 is set to: Compter with logic");
+        str.emplace_back("Player-2 is set to: " + COMPUTER_PLAYER_SIMPLE_LOGIC);
         break;
     case wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT:
         m_player2.type = PlayerType::Computer_Perfect;
-        m_richText->AddParagraph("Player-2 is set to: Compter with perfect play");
+        str.emplace_back("Player-2 is set to: " + COMPUTER_PLAYER_PERFECT_GAME_TREE);
+        if(!m_gameTree->IsTreeComputed())
+        {
+            m_gameTree->ComputeTree();
+            str.emplace_back("Game tree is computed.");
+        }
+        break;
+    case wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINIMAX:
+        m_player2.type = PlayerType::Computer_Minimax;
+        str.emplace_back("Player-2 is set to: " + COMPUTER_PLAYER_PERFECT_MINIMAX);
+        break;
+    case wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MCTS:
+        m_player2.type = PlayerType::Computer_MonteCarloTreeSearch;
+        str.emplace_back("Player-2 is set to: " + COMPUTER_PLAYER_MCTS);
         break;
     default:
-        std::cerr << "Computer strenght settings error" << std::endl;
-        break;
+        add_text(std::vector<std::string> {"Computer strenght settings error"}, RedText);
+        return;
     }
-    m_richText->Refresh();
+    add_text(str,BlueText);
 }
 
 void TicTacToeMainFrame::OnClearTextArea(wxCommandEvent& event)
@@ -430,17 +480,32 @@ void TicTacToeMainFrame::OnClearScore(wxCommandEvent& event)
     m_score->print();
 }
 
+void TicTacToeMainFrame::OnComputeCompleteGameTree(wxCommandEvent& event)
+{
+    std::vector<std::string> str;
+    if(m_gameTree->IsTreeComputed())
+    {
+        str.emplace_back("Game tree is already computed!");
+        add_text(str, RedText);
+        return;
+    }
+
+    m_gameTree->ComputeTree();
+    str.emplace_back("Game tree is computed.");
+    add_text(str, BlueText);
+    add_text(m_gameTree->GetTreeStatistics(), BlueText);
+}
+
 void TicTacToeMainFrame::OnAbout(wxCommandEvent& event)
 {
-    m_richText->AddParagraph("**********************************************");
-    m_richText->BeginItalic();
-    m_richText->AddParagraph(wxString("Tic-Tac-Toe is a zero-sum two player game with perfect information"));
-    m_richText->AddParagraph(wxString("Player types (human or computer) can be selected using the settings menu."));
-    m_richText->AddParagraph(wxString("Developped by Murat Yirci, copyright 2016"));
-    m_richText->AddParagraph(wxString("Contact: myirci@gmail.com"));
-    m_richText->EndItalic();
-    m_richText->AddParagraph("**********************************************");
-    m_richText->Refresh();
+    std::vector<std::string> str
+    {
+        "Tic-Tac-Toe is a zero-sum two player game with perfect information.",
+        "Player types (human or computer) can be selected using the Settings menu.",
+        "Developped by Murat Yirci, copyright 2020.",
+        "Contact: myirci@gmail.com"
+    };
+    add_text(str, BlueText);
 }
 
 void TicTacToeMainFrame::run_game()
@@ -455,19 +520,27 @@ void TicTacToeMainFrame::run_game()
     int sq{-1};
     Player& side_to_move = m_player1Turn ? m_player1 : m_player2;
 
-    if(side_to_move.type == PlayerType::Computer_RandomMove)
+    switch(side_to_move.type)
     {
-        sq = m_logic->MakeARandomMove(side_to_move.sym);
-    }
-    else if(side_to_move.type == PlayerType::Computer_Logic)
-    {
-        sq = m_logic->MakeALogicalMove(side_to_move.sym);
-    }
-    else if(side_to_move.type == PlayerType::Computer_Perfect)
-    {
-        // Player1 is the Max player
+    case PlayerType::Computer_RandomMove:
+        sq = m_logic->MakeRandomMove(side_to_move.sym);
+        break;
+    case PlayerType::Computer_Logic:
+        sq = m_logic->MakeLogicalMove(side_to_move.sym);
+        break;
+    case PlayerType::Computer_Perfect:
         // sq = m_logic->MakeAPerfectMove(side_to_move.sym, true);
+        break;
+    case PlayerType::Computer_Minimax:
+        // Not implemented yet!
+        sq = m_logic->MakeRandomMove(side_to_move.sym);
+        break;
+    case PlayerType::Computer_MonteCarloTreeSearch:
+        // Not implemented yet!
+        sq = m_logic->MakeRandomMove(side_to_move.sym);
+        break;
     }
+
     int idx = (side_to_move.sym == Symbol::X ? 1 : 2);
     m_buttons[sq]->SetBitmap(m_bitmaps[idx]);
     m_occupied[sq] = true;
@@ -517,12 +590,8 @@ bool TicTacToeMainFrame::is_game_ended()
     }
 
     m_statusBar->SetStatusText(wxString(str));
-    m_richText->BeginBold();
-    m_richText->AddParagraph(wxString(str));
-    m_richText->EndBold();
-    m_richText->Refresh();
+    add_text(std::vector<std::string>{str}, BlueText);
     m_gameGoing = false;
-
     m_score->print();
 
     return true;

@@ -1,6 +1,6 @@
 /*
  *
- * Murat Yirci - Copyright 2016
+ * Murat Yirci - Copyright 2020
  *
  * Contact: myirci@gmail.com
  *
@@ -34,6 +34,7 @@ enum
     wxID_MENU_FILE_CLEAR_TEXT_AREA,
     wxID_MENU_FILE_SIMULATION,
     wxID_MENU_FILE_CLEAR_SCORE,
+    wxID_MENU_FILE_COMPUTE_COMPLETE_GAME_TREE,
     wxID_MENU_HELP_ABOUT,
     wxID_MENU_SETTINGS_PLAYER1_X,
     wxID_MENU_SETTINGS_PLAYER1_O,
@@ -41,13 +42,13 @@ enum
     wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_RANDOMLY,
     wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_WITH_LOGIC,
     wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT,
-    wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MINMAX,
+    wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MINIMAX,
     wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS,
     wxID_MENU_SETTINGS_PLAYER2_HUMAN,
     wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_RANDOMLY,
     wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_WITH_LOGIC,
     wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT,
-    wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINMAX,
+    wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINIMAX,
     wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MCTS
 };
 
@@ -57,6 +58,7 @@ class wxPanel;
 class wxGridSizer;
 class wxRichTextAttr;
 
+class TicTacToeTree;
 
 class TicTacToeMainFrame : public wxFrame
 {
@@ -87,6 +89,7 @@ private:
     Player m_player2;
     std::unique_ptr<TicTacToe> m_logic;
     std::unique_ptr<GameScore> m_score;
+    std::unique_ptr<TicTacToeTree> m_gameTree;
 
     // Handlers for MainFrame events.
     void OnClickButton(wxCommandEvent& event);
@@ -94,6 +97,7 @@ private:
     void OnChangePlayerSymbols(wxCommandEvent& event);
     void OnClearTextArea(wxCommandEvent& event);
     void OnClearScore(wxCommandEvent& event);
+    void OnComputeCompleteGameTree(wxCommandEvent& event);
     void OnAbout(wxCommandEvent& event);
     void OnChangePlayerType(wxCommandEvent& event);
     void OnStartSimulation(wxCommandEvent& event);
@@ -107,10 +111,20 @@ private:
     void toggle_side_to_move();
     void run_game();
     bool is_game_ended();
+    void add_text(const std::vector<std::string>& v, const wxRichTextAttr& style);
 
     // Rich text attributes
     static const wxRichTextAttr RedText;
     static const wxRichTextAttr BlueText;
+    static const wxRichTextAttr BlackText;
+    static const wxRichTextAttr LightGreyText;
+
+    static const std::string HUMAN_PLAYER;
+    static const std::string COMPUTER_PLAYER_RANDOM;
+    static const std::string COMPUTER_PLAYER_SIMPLE_LOGIC;
+    static const std::string COMPUTER_PLAYER_PERFECT_GAME_TREE;
+    static const std::string COMPUTER_PLAYER_PERFECT_MINIMAX;
+    static const std::string COMPUTER_PLAYER_MCTS;
 
     DECLARE_EVENT_TABLE()
 };

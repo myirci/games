@@ -1,3 +1,12 @@
+/*
+ *
+ * Murat Yirci - Copyright 2020
+ *
+ * Contact: myirci@gmail.com
+ *
+ *
+*/
+
 #include "SimulationDialog.hpp"
 #include <wx/sizer.h>
 #include <wx/checkbox.h>
