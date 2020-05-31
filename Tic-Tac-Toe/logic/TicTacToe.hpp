@@ -1,17 +1,19 @@
 /*
  *
- * Murat Yirci - Copyright 2016
+ * Murat Yirci - Copyright 2020
  *
  * Contact: myirci@gmail.com
  *
  *
 */
+
 #pragma once
 
 #include <string>
 #include <array>
 #include <vector>
 #include <cstdint>
+#include <memory>
 
 enum class Result : std::int8_t
 {
@@ -29,6 +31,7 @@ enum class Square : std::int8_t
 };
 
 enum class Symbol : std::int8_t;
+class TicTacToeTree;
 
 class TicTacToe
 {
@@ -53,9 +56,10 @@ public:
     Result GetResult() const;
 
     // intelligence
-    int MakeARandomMove(Symbol s);
-    int MakeALogicalMove(Symbol s);
-    int MakeAPerfectMove(Symbol s, bool max_player);
+    int MakeRandomMove(Symbol s);
+    int MakeLogicalMove(Symbol s);
+    int MakeGameTreeMove(Symbol s, const std::unique_ptr<TicTacToeTree>& gt);
+    int MakeMiniMaxMove(Symbol s, bool max_player);
 
 private:
     Board m_board;

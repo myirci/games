@@ -1,13 +1,15 @@
 /*
  *
- * Murat Yirci - Copyright 2016
+ * Murat Yirci - Copyright 2020
  *
  * Contact: myirci@gmail.com
  *
  *
 */
+
 #include "TicTacToe.hpp"
 #include "../utility/Utility.hpp"
+#include "../utility/TicTacToeTree.hpp"
 
 #include <iostream>
 #include <algorithm>
@@ -77,23 +79,22 @@ void TicTacToe::print_board() const {
     }
 }
 
-int TicTacToe::MakeARandomMove(Symbol s)
+int TicTacToe::MakeRandomMove(Symbol s)
 {
     auto empty_squares = get_empty_square_indexes();
     auto engine = std::default_random_engine(std::random_device()());
     std::uniform_int_distribution<int> dist(0, empty_squares.size()-1);
     int sq = dist(engine);
-
     m_board[empty_squares[sq]] = (s == Symbol::X ? Square::x : Square::o);
-
     return empty_squares[sq];
 }
 
-int TicTacToe::MakeALogicalMove(Symbol s)
+int TicTacToe::MakeLogicalMove(Symbol s)
 {
     Square me = (s == Symbol::X ? Square::x : Square::o);
+    Square ot = (s == Symbol::X ? Square::o : Square::x);
 
-    // at the beginning, always try to start from the middle square
+    // at the beginning, we start from the middle square, may not be the best strategy
     if(Empty())
     {
         m_board[4] = me;
@@ -101,7 +102,7 @@ int TicTacToe::MakeALogicalMove(Symbol s)
     }
 
     // is there a winning move
-    for(int j = 0; j < 9; j+=3)
+    for(int j = 0; j < 9; j += 3)
     {
         for(int i = 0; i < 3; ++i)
         {
@@ -143,10 +144,8 @@ int TicTacToe::MakeALogicalMove(Symbol s)
         }
     }
 
-    Square ot = (s == Symbol::X ? Square::o : Square::x);
-
     // can other win ?
-    for(int j = 0; j < 9; j+=3)
+    for(int j = 0; j < 9; j += 3)
     {
         for(int i = 0; i < 3; ++i)
         {
@@ -194,10 +193,15 @@ int TicTacToe::MakeALogicalMove(Symbol s)
         return 4;
     }
 
-    return MakeARandomMove(s);
+    return MakeRandomMove(s);
 }
 
-int TicTacToe::MakeAPerfectMove(Symbol s, bool max_player)
+int TicTacToe::MakeGameTreeMove(Symbol s, const std::unique_ptr<TicTacToeTree>& gt)
+{
+    return 0;
+}
+
+int TicTacToe::MakeMiniMaxMove(Symbol s, bool max_player)
 {
     auto empty_squares = get_empty_square_indexes();
 
@@ -325,7 +329,6 @@ Result TicTacToe::get_result(const Board& b) const
         }
     }
 
-
     // check diagonals
     if(b[0] != Square::e && b[0] == b[4] && b[0] == b[8])
     {
@@ -337,7 +340,7 @@ Result TicTacToe::get_result(const Board& b) const
         return (b[2] == Square::x ? Result::x_win : Result::o_win);
     }
 
-    return std::any_of(m_board.begin(), m_board.end(), [](Square s){ return s == Square::e;})
+    return std::any_of(b.begin(), b.end(), [](Square s){ return s == Square::e;})
         ? Result::no_result
         : Result::draw;
 }
