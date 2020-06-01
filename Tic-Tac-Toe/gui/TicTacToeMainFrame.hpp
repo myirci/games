@@ -84,7 +84,6 @@ private:
     // for game play
     bool m_gameGoing;
     bool m_occupied[9];
-    bool m_player1Turn;
     Player m_player1;
     Player m_player2;
     std::unique_ptr<TicTacToe> m_logic;
@@ -103,15 +102,14 @@ private:
     void OnStartSimulation(wxCommandEvent& event);
 
     // Private member functions
-    void create_new_game();
-    void create_bitmap_buttons(wxGridSizer* gSizer);
-    void create_menu();
-    void write_text_header();
-    void update_status_bar_for_side_to_move();
-    void toggle_side_to_move();
-    void run_game();
-    bool is_game_ended();
-    void add_text(const std::vector<std::string>& v, const wxRichTextAttr& style);
+    void CreateNewGame();
+    void CreateBitmapButtons(wxGridSizer* gSizer);
+    void CreateMenu();
+    void WriteTextHeader();
+    void UpdateStatusBarForSideToMove();
+    void RunGame();
+    bool IsGameEnded();
+    void AddText(const std::vector<std::string>& v, const wxRichTextAttr& style);
 
     // Rich text attributes
     static const wxRichTextAttr RedText;

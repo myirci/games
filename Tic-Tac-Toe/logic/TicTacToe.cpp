@@ -16,19 +16,28 @@
 #include <random>
 #include <utility>
 
-TicTacToe::TicTacToe() : m_board{ Square::e, Square::e, Square::e,
-                                  Square::e, Square::e, Square::e,
-                                  Square::e, Square::e, Square::e } { }
+TicTacToe::TicTacToe() : m_board{3,3,3,3,3,3,3,3,3}, m_side_to_move{1} { }
 
-
-void TicTacToe::SetSquare(int pos, Square s)
+int TicTacToe::SideToMove() const
 {
-    m_board[pos] = s;
+    return m_side_to_move;
+}
+
+void TicTacToe::Moved(int pos)
+{
+    m_board[pos] = m_side_to_move;
+    ToggleSideToMove();
+}
+
+void TicTacToe::Reset()
+{
+    std::fill(m_board.begin(), m_board.end(), 3);
+    m_side_to_move = 1;
 }
 
 bool TicTacToe::Empty() const
 {
-    return std::all_of(m_board.begin(), m_board.end(), [](Square s){ return s == Square::e; });
+    return std::all_of(m_board.begin(), m_board.end(), [](int val){ return val == 3; });
 }
 
 Result TicTacToe::GetResult() const
@@ -36,160 +45,149 @@ Result TicTacToe::GetResult() const
     // check rows
     for(int i = 0; i < 9; i+=3)
     {
-        if(m_board[i] != Square::e && m_board[i] == m_board[1 + i] && m_board[i] == m_board[2 + i])
+        if(m_board[i] != 3 && m_board[i] == m_board[1 + i] && m_board[i] == m_board[2 + i])
         {
-            return (m_board[i] == Square::x ? Result::x_win : Result::o_win);
+            return (m_board[i] == 1 ? Result::player1_win : Result::player2_win);
         }
     }
 
     // check cols
     for(int i = 0; i < 3; ++i)
     {
-        if(m_board[i] != Square::e && m_board[i] == m_board[3 + i] && m_board[i] == m_board[6 + i])
+        if(m_board[i] != 3 && m_board[i] == m_board[3 + i] && m_board[i] == m_board[6 + i])
         {
-            return (m_board[i] == Square::x ? Result::x_win : Result::o_win);
+            return (m_board[i] == 1 ? Result::player1_win : Result::player2_win);
         }
     }
 
     // check diagonals
-    if(m_board[0] != Square::e && m_board[0] == m_board[4] && m_board[0] == m_board[8])
+    if(m_board[0] != 3 && m_board[0] == m_board[4] && m_board[0] == m_board[8])
     {
-        return (m_board[0] == Square::x ? Result::x_win : Result::o_win);
+        return (m_board[0] == 1 ? Result::player1_win : Result::player2_win);
     }
 
-    if(m_board[2] != Square::e && m_board[2] == m_board[4] && m_board[2] == m_board[6])
+    if(m_board[2] != 3 && m_board[2] == m_board[4] && m_board[2] == m_board[6])
     {
-        return (m_board[2] == Square::x ? Result::x_win : Result::o_win);
+        return (m_board[2] == 1 ? Result::player1_win : Result::player2_win);
     }
 
-    return std::any_of(m_board.begin(), m_board.end(), [](Square s){ return s == Square::e;})
+    return std::any_of(m_board.begin(), m_board.end(), [](int val){ return val == 3;})
         ? Result::no_result
         : Result::draw;
 }
 
-void TicTacToe::Clear()
-{
-    std::fill(m_board.begin(), m_board.end(), Square::e);
-}
-
-int TicTacToe::MakeRandomMove(Symbol s)
+int TicTacToe::MakeRandomMove()
 {
     auto empty_squares = GetEmptySquareIndexes();
     auto engine = std::default_random_engine(std::random_device()());
     std::uniform_int_distribution<int> dist(0, empty_squares.size()-1);
     int sq = dist(engine);
-    m_board[empty_squares[sq]] = (s == Symbol::X ? Square::x : Square::o);
+    m_board[empty_squares[sq]] = m_side_to_move;
+    ToggleSideToMove();
     return empty_squares[sq];
 }
 
-int TicTacToe::MakeLogicalMove(Symbol s)
+int TicTacToe::MakeLogicalMove()
 {
-    Square me = (s == Symbol::X ? Square::x : Square::o);
-    Square ot = (s == Symbol::X ? Square::o : Square::x);
+    int sq1{-1}, sq2{-1};
 
     // at the beginning, we start from the middle square, may not be the best strategy
     if(Empty())
     {
-        m_board[4] = me;
-        return 4;
+        sq1 = 4;
     }
-
-    // is there a winning move
-    for(int j = 0; j < 9; j += 3)
+    else
     {
-        for(int i = 0; i < 3; ++i)
+        int other = m_side_to_move == 1 ? 2 : 1;
+
+        // rows
+        for(int j = 0; j < 9; j += 3)
         {
-            if(m_board[i+j] == Square::e && m_board[(i+1)%3 + j] == me && m_board[(i+2)%3 + j] == me)
+            for(int i = 0; i < 3; ++i)
             {
-                m_board[i+j] = me;
-                return i+j;
+                if(m_board[i+j] != 3)
+                {
+                    continue;
+                }
+
+                if(m_board[(i+1)%3 + j] == m_side_to_move && m_board[(i+2)%3 + j] == m_side_to_move)
+                {
+                    sq1 = i+j;
+                }
+                else if(m_board[(i+1)%3 + j] == other && m_board[(i+2)%3 + j] == other)
+                {
+                    sq2 = i+j;
+                }
+            }
+        }
+
+        // columns
+        if(sq1 == -1)
+        {
+            for(int j = 0; j < 3; ++j)
+            {
+                for(int i = 0; i < 3; ++i)
+                {
+                    if(m_board[3*i + j] != 3)
+                    {
+                        continue;
+                    }
+
+                    if(m_board[((i+1)%3)*3 + j] == m_side_to_move && m_board[((i+2)%3)*3 + j] == m_side_to_move)
+                    {
+                        sq1 = 3*i+j;
+                    }
+                    else if(m_board[((i+1)%3)*3 + j] == other && m_board[((i+2)%3)*3 + j] == other)
+                    {
+                        sq2 = 3*i+j;
+                    }
+                }
+            }
+        }
+
+        // diagonals
+        if(sq1 == -1)
+        {
+            for(int i = 0; i < 3; ++i)
+            {
+                if(m_board[(i+1)*2] != 3)
+                {
+                    continue;
+                }
+
+                if(m_board[((i+1)%3 + 1)*2] == m_side_to_move && m_board[((i+2)%3 + 1)*2] == m_side_to_move)
+                {
+                    sq1 = (i+1)*2;
+                }
+                else if(m_board[((i+1)%3 + 1)*2] == other && m_board[((i+2)%3 + 1)*2] == other)
+                {
+                    sq2 = (i+1)*2;
+                }
+
+                if(m_board[((i+1)%3)*4] == m_side_to_move && m_board[((i+2)%3)*4] == m_side_to_move)
+                {
+                    sq1 = i*4;
+                }
+                else if(m_board[((i+1)%3)*4] == other && m_board[((i+2)%3)*4] == other)
+                {
+                    sq2 = i*4;
+                }
             }
         }
     }
 
-    for(int j = 0; j < 3; ++j)
+    int sq = sq1 != -1 ? sq1 : sq2;
+    if(sq != -1)
     {
-        for(int i = 0; i < 3; ++i)
-        {
-            if(m_board[3*i + j] == Square::e && m_board[((i+1)%3)*3 + j] == me && m_board[((i+2)%3)*3 + j] == me)
-            {
-                m_board[3*i+j] = me;
-                return 3*i+j;
-            }
-        }
+        m_board[sq] = m_side_to_move;
+        ToggleSideToMove();
+        return sq;
     }
 
-    for(int i = 0; i < 3; ++i)
-    {
-        if(m_board[(i+1)*2] == Square::e && m_board[((i+1)%3 + 1)*2] == me && m_board[((i+2)%3 + 1)*2] == me)
-        {
-            m_board[(i+1)*2] = me;
-            return (i+1)*2;
-        }
-    }
-
-    for(int i = 0; i < 3; ++i)
-    {
-        if(m_board[i*4] == Square::e && m_board[((i+1)%3)*4] == me && m_board[((i+2)%3)*4] == me)
-        {
-            m_board[i*4] = me;
-            return i*4;
-        }
-    }
-
-    // can other win ?
-    for(int j = 0; j < 9; j += 3)
-    {
-        for(int i = 0; i < 3; ++i)
-        {
-            if(m_board[i+j] == Square::e && m_board[(i+1)%3 + j] == ot && m_board[(i+2)%3 + j] == ot)
-            {
-                m_board[i+j] = me;
-                return i+j;
-            }
-        }
-    }
-
-    for(int j = 0; j < 3; ++j)
-    {
-        for(int i = 0; i < 3; ++i)
-        {
-            if(m_board[3*i + j] == Square::e && m_board[((i+1)%3)*3 + j] == ot && m_board[((i+2)%3)*3 + j] == ot)
-            {
-                m_board[3*i+j] = me;
-                return 3*i+j;
-            }
-        }
-    }
-
-    for(int i = 0; i < 3; ++i)
-    {
-        if(m_board[(i+1)*2] == Square::e && m_board[((i+1)%3 + 1)*2] == ot && m_board[((i+2)%3 + 1)*2] == ot)
-        {
-            m_board[(i+1)*2] = me;
-            return (i+1)*2;
-        }
-    }
-
-    for(int i = 0; i < 3; ++i)
-    {
-        if(m_board[i*4] == Square::e && m_board[((i+1)%3)*4] == ot && m_board[((i+2)%3)*4] == ot)
-        {
-            m_board[i*4] = me;
-            return i*4;
-        }
-    }
-
-    if(m_board[4] == Square::e)
-    {
-        m_board[4] = me;
-        return 4;
-    }
-
-    return MakeRandomMove(s);
+    return MakeRandomMove();
 }
 
-int TicTacToe::MakeGameTreeMove(Symbol s, const std::unique_ptr<TicTacToeTree>& gt)
+int TicTacToe::MakeGameTreeMove(const std::unique_ptr<TicTacToeTree>& gt)
 {
     return 0;
 }
@@ -309,10 +307,16 @@ std::vector<int> TicTacToe::GetEmptySquareIndexes() const
     std::vector<int> empty_squares;
     for(int i = 0; i < m_board.size(); i++)
     {
-        if(m_board[i] == Square::e)
+        if(m_board[i] == 3)
         {
             empty_squares.push_back(i);
         }
     }
     return empty_squares;
 }
+
+void TicTacToe::ToggleSideToMove()
+{
+    m_side_to_move = (m_side_to_move == 1 ? 2 : 1);
+}
+

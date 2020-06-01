@@ -6,6 +6,7 @@
  *
  *
 */
+
 #include <chrono>
 #include <sstream>
 #include <ctime>
@@ -32,21 +33,20 @@ std::unique_ptr<GameScore> Simulate(long num_sim, const Player& p1, const Player
 
     for(int i = 0; i < num_sim; i++)
     {
-        bool player1{true};
-        logic->Clear();
+        logic->Reset();
         int sq{-1};
         Result res = Result::no_result;
 
         while(res == Result::no_result)
         {
-            const Player& side_to_move = player1 ? p1 : p2;
-            switch (side_to_move.type)
+            const Player& player = logic->SideToMove() == 1 ? p1 : p2;
+            switch (player.type)
             {
             case PlayerType::Computer_RandomMove:
-                sq = logic->MakeRandomMove(side_to_move.sym);
+                sq = logic->MakeRandomMove();
                 break;
             case PlayerType::Computer_Logic:
-                sq = logic->MakeLogicalMove(side_to_move.sym);
+                sq = logic->MakeLogicalMove();
                 break;
             case PlayerType::Computer_Perfect:
                 break;
@@ -58,16 +58,15 @@ std::unique_ptr<GameScore> Simulate(long num_sim, const Player& p1, const Player
                 break;
             }
             res = logic->GetResult();
-            player1 = !player1;
         }
 
         switch (res)
         {
-            case Result::x_win:
-                score->num_x_wins++;
+            case Result::player1_win:
+                score->num_player1_wins++;
                 break;
-            case Result::o_win:
-                score->num_o_wins++;
+            case Result::player2_win:
+                score->num_player2_wins++;
                 break;
             case Result::draw:
                 score->num_draws++;

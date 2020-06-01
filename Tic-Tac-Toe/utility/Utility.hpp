@@ -16,23 +16,23 @@
 
 struct GameScore
 {
-    long num_x_wins;
-    long num_o_wins;
+    long num_player1_wins;
+    long num_player2_wins;
     long num_draws;
 
-    GameScore() : num_x_wins{0}, num_o_wins{0}, num_draws{0} { }
+    GameScore() : num_player1_wins{0}, num_player2_wins{0}, num_draws{0} { }
 
     void clear()
     {
-        num_x_wins = 0;
-        num_o_wins = 0;
+        num_player1_wins = 0;
+        num_player2_wins = 0;
         num_draws = 0;
     }
 
     void print() const
     {
-        std::cout << "x-win: " << num_x_wins << std::endl;
-        std::cout << "o-win: " << num_o_wins << std::endl;
+        std::cout << "player1-win: " << num_player1_wins << std::endl;
+        std::cout << "player2-win: " << num_player2_wins << std::endl;
         std::cout << "draw: " << num_draws << std::endl;
         std::cout << "-------------------" << std::endl;
     }
@@ -40,8 +40,8 @@ struct GameScore
     std::string get_res() const
     {
         std::string str =
-                "x-win: " + std::to_string(num_x_wins) +
-                ", o-win: " + std::to_string(num_o_wins) +
+                "player1-win: " + std::to_string(num_player1_wins) +
+                ", player2-win: " + std::to_string(num_player2_wins) +
                 ", draw: " + std::to_string(num_draws);
         return str;
     }
