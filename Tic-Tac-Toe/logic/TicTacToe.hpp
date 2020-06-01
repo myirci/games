@@ -42,6 +42,7 @@ public:
     int MakeRandomMove();
     int MakeLogicalMove();
     int MakeGameTreeMove(const std::unique_ptr<TicTacToeTree>& gt);
+    int MakeStochasticGameTreeMove(const std::unique_ptr<TicTacToeTree>& gt);
     // int MakeMiniMaxMove(Symbol s, bool max_player);
 
 private:

@@ -50,12 +50,20 @@ BEGIN_EVENT_TABLE(TicTacToeMainFrame, wxFrame)
     EVT_MENU(wxID_MENU_FILE_COMPUTE_COMPLETE_GAME_TREE, TicTacToeMainFrame::OnComputeCompleteGameTree)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_X, TicTacToeMainFrame::OnChangePlayerSymbols)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_O, TicTacToeMainFrame::OnChangePlayerSymbols)
+    EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_HUMAN, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_RANDOMLY, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_WITH_LOGIC, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT, TicTacToeMainFrame::OnChangePlayerType)
+    EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT_STOCHASTIC, TicTacToeMainFrame::OnChangePlayerType)
+    EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MINIMAX, TicTacToeMainFrame::OnChangePlayerType)
+    EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS, TicTacToeMainFrame::OnChangePlayerType)
+    EVT_MENU(wxID_MENU_SETTINGS_PLAYER2_HUMAN, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_RANDOMLY, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_WITH_LOGIC, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT, TicTacToeMainFrame::OnChangePlayerType)
+    EVT_MENU(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT_STOCHASTIC, TicTacToeMainFrame::OnChangePlayerType)
+    EVT_MENU(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINIMAX, TicTacToeMainFrame::OnChangePlayerType)
+    EVT_MENU(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MCTS, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_HELP_ABOUT, TicTacToeMainFrame::OnAbout)
 END_EVENT_TABLE()
 
@@ -67,7 +75,8 @@ const wxRichTextAttr TicTacToeMainFrame::LightGreyText = wxRichTextAttr(wxTextAt
 const std::string TicTacToeMainFrame::HUMAN_PLAYER = "Human";
 const std::string TicTacToeMainFrame::COMPUTER_PLAYER_RANDOM = "Computer plays randomly";
 const std::string TicTacToeMainFrame::COMPUTER_PLAYER_SIMPLE_LOGIC = "Computer plays with simple logic";
-const std::string TicTacToeMainFrame::COMPUTER_PLAYER_PERFECT_GAME_TREE = "Computer plays perfect using the complete game tree";
+const std::string TicTacToeMainFrame::COMPUTER_PLAYER_PERFECT_GAME_TREE = "Computer plays perfect using the precomputed game tree, moves are chosen deterministically";
+const std::string TicTacToeMainFrame::COMPUTER_PLAYER_PERFECT_GAME_TREE_STOCHASTIC = "Computer plays perfect using the precomputed game tree, moves are chosen randomly";
 const std::string TicTacToeMainFrame::COMPUTER_PLAYER_PERFECT_MINIMAX = "Computer plays perfect with minimax algorithm";
 const std::string TicTacToeMainFrame::COMPUTER_PLAYER_MCTS = "Computer plays with monte-carlo-tree-search algorithm";
 
@@ -165,7 +174,7 @@ void TicTacToeMainFrame::CreateMenu()
     m_menuFile->Append(wxID_MENU_FILE_SIMULATION, wxString("Simulation"));
     m_menuFile->Append(wxID_MENU_FILE_CLEAR_TEXT_AREA, wxString("Clear text area"));
     m_menuFile->Append(wxID_MENU_FILE_CLEAR_SCORE, wxString("Clear score"));
-    m_menuFile->Append(wxID_MENU_FILE_COMPUTE_COMPLETE_GAME_TREE, wxString("Compute complete game tree"));
+    m_menuFile->Append(wxID_MENU_FILE_COMPUTE_COMPLETE_GAME_TREE, wxString("Compute game tree"));
     m_menubar->Append(m_menuFile, wxT("File"));
 
     m_menuSettings = new wxMenu();
@@ -174,6 +183,7 @@ void TicTacToeMainFrame::CreateMenu()
     playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_RANDOMLY, COMPUTER_PLAYER_RANDOM);
     playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_WITH_LOGIC, COMPUTER_PLAYER_SIMPLE_LOGIC);
     playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT, COMPUTER_PLAYER_PERFECT_GAME_TREE);
+    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT_STOCHASTIC, COMPUTER_PLAYER_PERFECT_GAME_TREE_STOCHASTIC);
     playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MINIMAX, COMPUTER_PLAYER_PERFECT_MINIMAX);
     playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS, COMPUTER_PLAYER_MCTS);
 
@@ -182,6 +192,7 @@ void TicTacToeMainFrame::CreateMenu()
     playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_RANDOMLY, COMPUTER_PLAYER_RANDOM);
     playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_WITH_LOGIC, COMPUTER_PLAYER_SIMPLE_LOGIC);
     playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT, COMPUTER_PLAYER_PERFECT_GAME_TREE);
+    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT_STOCHASTIC, COMPUTER_PLAYER_PERFECT_GAME_TREE_STOCHASTIC);
     playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINIMAX, COMPUTER_PLAYER_PERFECT_MINIMAX);
     playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS, COMPUTER_PLAYER_MCTS);
 
@@ -331,8 +342,8 @@ void TicTacToeMainFrame::OnStartSimulation(wxCommandEvent& event)
 
     if(simDialog->ShowModal() == wxID_OK)
     {
-        sim_in_gui = simDialog->simulate_in_gui();
-        num_sim = simDialog->get_num_simulations();
+        sim_in_gui = simDialog->SimulateInGui();
+        num_sim = simDialog->GetNumSimulations();
     }
     simDialog->Destroy();
 
@@ -350,11 +361,11 @@ void TicTacToeMainFrame::OnStartSimulation(wxCommandEvent& event)
     }
     else
     {
-        auto res = Simulate(num_sim, m_player1, m_player2);
+        auto res = Simulate(num_sim, m_player1, m_player2, m_gameTree);
         std::vector<std::string> str
         {
             m_player1.sym == Symbol::X ? "Player-1 (X), Player-2 (O)" : "Player_1 (O), Player_2 (X)",
-            res->get_res()
+            res->GetResult()
         };
         AddText(str, BlueText);
     }
@@ -414,6 +425,15 @@ void TicTacToeMainFrame::OnChangePlayerType(wxCommandEvent& event)
             str.emplace_back("Game tree is computed.");
         }
         break;
+    case wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT_STOCHASTIC:
+        m_player1.type = PlayerType::Computer_PerfectStochastic;
+        str.emplace_back("Player-1 is set to: " + COMPUTER_PLAYER_PERFECT_GAME_TREE_STOCHASTIC);
+        if(!m_gameTree->IsTreeComputed())
+        {
+            m_gameTree->ComputeTree();
+            str.emplace_back("Game tree is computed.");
+        }
+        break;
     case wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MINIMAX:
         m_player1.type = PlayerType::Computer_Minimax;
         str.emplace_back("Player-1 is set to: " + COMPUTER_PLAYER_PERFECT_MINIMAX);
@@ -443,6 +463,15 @@ void TicTacToeMainFrame::OnChangePlayerType(wxCommandEvent& event)
             str.emplace_back("Game tree is computed.");
         }
         break;
+    case wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT_STOCHASTIC:
+        m_player2.type = PlayerType::Computer_PerfectStochastic;
+        str.emplace_back("Player-2 is set to: " + COMPUTER_PLAYER_PERFECT_GAME_TREE_STOCHASTIC);
+        if(!m_gameTree->IsTreeComputed())
+        {
+            m_gameTree->ComputeTree();
+            str.emplace_back("Game tree is computed.");
+        }
+        break;
     case wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINIMAX:
         m_player2.type = PlayerType::Computer_Minimax;
         str.emplace_back("Player-2 is set to: " + COMPUTER_PLAYER_PERFECT_MINIMAX);
@@ -466,8 +495,8 @@ void TicTacToeMainFrame::OnClearTextArea(wxCommandEvent& event)
 
 void TicTacToeMainFrame::OnClearScore(wxCommandEvent& event)
 {
-    m_score->clear();
-    m_score->print();
+    m_score->Clear();
+    m_score->Print();
 }
 
 void TicTacToeMainFrame::OnComputeCompleteGameTree(wxCommandEvent& event)
@@ -521,7 +550,10 @@ void TicTacToeMainFrame::RunGame()
         sq = m_logic->MakeLogicalMove();
         break;
     case PlayerType::Computer_Perfect:
-        // sq = m_logic->MakeAPerfectMove(side_to_move.sym, true);
+        sq = m_logic->MakeGameTreeMove(m_gameTree);
+        break;
+    case PlayerType::Computer_PerfectStochastic:
+        sq = m_logic->MakeStochasticGameTreeMove(m_gameTree);
         break;
     case PlayerType::Computer_Minimax:
         // Not implemented yet!
@@ -583,7 +615,7 @@ bool TicTacToeMainFrame::IsGameEnded()
     m_statusBar->SetStatusText(wxString(str));
     AddText(std::vector<std::string>{str}, BlueText);
     m_gameGoing = false;
-    m_score->print();
+    m_score->Print();
 
     return true;
 }

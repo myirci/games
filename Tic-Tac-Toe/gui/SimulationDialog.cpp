@@ -48,12 +48,12 @@ SimulationDialog::SimulationDialog(wxWindow* parent, const wxString& title) :
     Centre();
 }
 
-bool SimulationDialog::simulate_in_gui()
+bool SimulationDialog::SimulateInGui()
 {
     return m_gui_sim;
 }
 
-long SimulationDialog::get_num_simulations()
+long SimulationDialog::GetNumSimulations()
 {
     return m_num_sim;
 }

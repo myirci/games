@@ -7,14 +7,14 @@
  *
 */
 
+#include "Utility.hpp"
+#include "TicTacToeTree.hpp"
+#include "../logic/TicTacToe.hpp"
+
 #include <chrono>
 #include <sstream>
 #include <ctime>
-
-#include "Utility.hpp"
-#include "../logic/TicTacToe.hpp"
-
-#include <memory>
+#include <numeric>
 
 std::string GetDateAndTime() {
 
@@ -26,7 +26,7 @@ std::string GetDateAndTime() {
     return ss.str();
 }
 
-std::unique_ptr<GameScore> Simulate(long num_sim, const Player& p1, const Player& p2)
+std::unique_ptr<GameScore> Simulate(long num_sim, const Player& p1, const Player& p2, const std::unique_ptr<TicTacToeTree>& gt)
 {
     auto logic = std::make_unique<TicTacToe>();
     auto score = std::make_unique<GameScore>();
@@ -49,6 +49,10 @@ std::unique_ptr<GameScore> Simulate(long num_sim, const Player& p1, const Player
                 sq = logic->MakeLogicalMove();
                 break;
             case PlayerType::Computer_Perfect:
+                sq = logic->MakeGameTreeMove(gt);
+                break;
+            case PlayerType::Computer_PerfectStochastic:
+                sq = logic->MakeStochasticGameTreeMove(gt);
                 break;
             case PlayerType::Computer_Minimax:
                 // Not implemented yet!
@@ -75,4 +79,9 @@ std::unique_ptr<GameScore> Simulate(long num_sim, const Player& p1, const Player
     }
 
     return score;
+}
+
+int GetKey(const std::array<int,9>& b)
+{
+    return std::accumulate(b.begin(), b.end(), 0, [](int sum, int elem) { return sum * 10 + elem; });
 }

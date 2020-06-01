@@ -8,10 +8,10 @@
 */
 
 #include "TicTacToeTree.hpp"
+#include "../utility/Utility.hpp"
 
 #include <iostream>
 #include <algorithm>
-#include <numeric>
 
 TicTacToeTree::TicTacToeTree(): root{nullptr} { }
 
@@ -33,7 +33,7 @@ void TicTacToeTree::ComputeTree()
     std::fill(board.begin(), board.end(), 3);
 
     // create the root node
-    root = new Node(GetKey(board), 0);
+    root = new Node(GetKey(board), 0, -1);
 
     // recursively create the nodes
     Compute(board, root, true);
@@ -46,6 +46,18 @@ void TicTacToeTree::Compute(std::array<int,9>& b, Node* curr, bool player1)
     if(curr->terminal != -1)
     {
         curr->score = curr->terminal == 2 ? -1 : curr->terminal;
+        switch(curr->score)
+        {
+        case 0:
+            curr->num_draws++;
+            break;
+        case 1:
+            curr->num_p1_wins++;
+            break;
+        case -1:
+            curr->num_p2_wins++;
+            break;
+        }
         return;
     }
 
@@ -62,7 +74,7 @@ void TicTacToeTree::Compute(std::array<int,9>& b, Node* curr, bool player1)
         b[i] = player1 ? 1 : 2;
 
         // create the child
-        curr->children.emplace_back(new Node(GetKey(b), curr->depth + 1));
+        curr->children.emplace_back(new Node(GetKey(b), curr->depth + 1, i));
 
         // explore the child
         Compute(b, curr->children.back(), !player1);
@@ -85,11 +97,14 @@ void TicTacToeTree::Compute(std::array<int,9>& b, Node* curr, bool player1)
         auto it = std::min_element(curr->children.begin(), curr->children.end(), comp);
         curr->score = (*it)->score;
     }
-}
 
-int TicTacToeTree::GetKey(const std::array<int,9>& b) const
-{
-    return std::accumulate(b.begin(), b.end(), 0, [](int sum, int elem){ return sum * 10 + elem; });
+    // count wins and draws
+    for(Node* child : curr->children)
+    {
+        curr->num_p1_wins += child->num_p1_wins;
+        curr->num_p2_wins += child->num_p2_wins;
+        curr->num_draws += child->num_draws;
+    }
 }
 
 // returns -1 for non-terminal states
@@ -190,4 +205,28 @@ void TicTacToeTree::ComputeStatistics(
     {
         ComputeStatistics(child, num_nodes, num_player1_wins, num_player2_wins, num_draws);
     }
+}
+
+Node* TicTacToeTree::Find(int key)
+{
+    return Find(root, key);
+}
+
+Node* TicTacToeTree::Find(Node* n, int key)
+{
+    if(n->key == key)
+    {
+        return n;
+    }
+
+    for(Node* child : n->children)
+    {
+       auto ret = Find(child, key);
+       if( ret != nullptr)
+       {
+           return ret;
+       }
+    }
+
+    return nullptr;
 }

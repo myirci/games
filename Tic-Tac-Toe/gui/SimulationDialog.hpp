@@ -24,8 +24,8 @@ class SimulationDialog : public wxDialog
 {
 public:
     SimulationDialog(wxWindow* parent, const wxString& title);
-    long get_num_simulations();
-    bool simulate_in_gui();
+    long GetNumSimulations();
+    bool SimulateInGui();
 
 private:
     wxCheckBox* m_cb;

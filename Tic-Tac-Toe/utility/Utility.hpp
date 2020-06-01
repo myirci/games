@@ -6,6 +6,7 @@
  *
  *
 */
+
 #ifndef UTILITY_HPP
 #define UTILITY_HPP
 
@@ -13,6 +14,9 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <array>
+
+class TicTacToeTree;
 
 struct GameScore
 {
@@ -22,14 +26,14 @@ struct GameScore
 
     GameScore() : num_player1_wins{0}, num_player2_wins{0}, num_draws{0} { }
 
-    void clear()
+    void Clear()
     {
         num_player1_wins = 0;
         num_player2_wins = 0;
         num_draws = 0;
     }
 
-    void print() const
+    void Print() const
     {
         std::cout << "player1-win: " << num_player1_wins << std::endl;
         std::cout << "player2-win: " << num_player2_wins << std::endl;
@@ -37,7 +41,7 @@ struct GameScore
         std::cout << "-------------------" << std::endl;
     }
 
-    std::string get_res() const
+    std::string GetResult() const
     {
         std::string str =
                 "player1-win: " + std::to_string(num_player1_wins) +
@@ -53,6 +57,7 @@ enum class PlayerType : std::int8_t
     Computer_RandomMove,
     Computer_Logic,
     Computer_Perfect,
+    Computer_PerfectStochastic,
     Computer_Minimax,
     Computer_MonteCarloTreeSearch
 };
@@ -74,7 +79,8 @@ struct Player
 
 std::string GetDateAndTime();
 
-std::unique_ptr<GameScore> Simulate(long num_sim, const Player& p1, const Player& p2);
+std::unique_ptr<GameScore> Simulate(long num_sim, const Player& p1, const Player& p2, const std::unique_ptr<TicTacToeTree>& gt);
 
+int GetKey(const std::array<int,9>& b);
 
 #endif // UTILITY_HPP

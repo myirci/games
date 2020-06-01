@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <iterator>
 #include <random>
 #include <utility>
 
@@ -164,6 +165,11 @@ int TicTacToe::MakeLogicalMove()
                     sq2 = (i+1)*2;
                 }
 
+                if(m_board[i*4] != 3)
+                {
+                    continue;
+                }
+
                 if(m_board[((i+1)%3)*4] == m_side_to_move && m_board[((i+2)%3)*4] == m_side_to_move)
                 {
                     sq1 = i*4;
@@ -189,7 +195,110 @@ int TicTacToe::MakeLogicalMove()
 
 int TicTacToe::MakeGameTreeMove(const std::unique_ptr<TicTacToeTree>& gt)
 {
-    return 0;
+    int key = GetKey(m_board);
+    Node* n = gt->Find(key);
+    std::vector<Node*> v;
+
+    int sq {-1};
+    if(m_side_to_move == 1)
+    {
+        // check if there is a winning move for player - 1
+        std::copy_if(n->children.begin(), n->children.end(), std::back_inserter(v), [](Node* nd) { return nd->score > 0; });
+        if(!v.empty())
+        {
+            // any winning move can be selected, however we choose the one which has more ways to win
+            auto it = std::max_element(v.begin(), v.end(), [](Node* nd1, Node* nd2) { return nd1->num_p1_wins < nd2->num_p1_wins; });
+            sq = (*it)->move;
+        }
+        else
+        {
+            // no winning move, select a non-losing move which has more potential for a win
+            std::copy_if(n->children.begin(), n->children.end(), std::back_inserter(v), [](Node* nd) { return nd->score == 0; });
+            if(!v.empty())
+            {
+                auto it = std::max_element(v.begin(), v.end(), [](Node* nd1, Node* nd2) { return nd1->num_p1_wins < nd2->num_p1_wins; });
+                sq = (*it)->move;
+            }
+            else
+            {
+                // all moves are loosing, select a move which has more potential for a draw or win
+                auto it = std::max_element(n->children.begin(), n->children.end(), [](Node* nd1, Node* nd2) { return (nd1->num_p1_wins + nd1->num_draws) < (nd2->num_p1_wins + nd1->num_draws); });
+                sq = (*it)->move;
+            }
+        }
+    }
+    else
+    {
+        // check if there is a winning move for player - 2
+        std::copy_if(n->children.begin(), n->children.end(), std::back_inserter(v), [](Node* nd) { return nd->score < 0; });
+        if(!v.empty())
+        {
+            // any winning move can be selected, however we choose the one which has more ways to win
+            auto it = std::min_element(v.begin(), v.end(), [](Node* nd1, Node* nd2) { return nd1->num_p2_wins < nd2->num_p2_wins; });
+            sq = (*it)->move;
+        }
+        else
+        {
+            // no winning move, select a non-losing move which has more potential for a win
+            std::copy_if(n->children.begin(), n->children.end(), std::back_inserter(v), [](Node* nd) { return nd->score == 0; });
+            if(!v.empty())
+            {
+                auto it = std::max_element(v.begin(), v.end(), [](Node* nd1, Node* nd2) { return nd1->num_p2_wins < nd2->num_p2_wins; });
+                sq = (*it)->move;
+            }
+            else
+            {
+                // all moves are loosing, select a move which has more potential for a draw or win
+                auto it = std::max_element(n->children.begin(), n->children.end(), [](Node* nd1, Node* nd2) { return (nd1->num_p2_wins + nd1->num_draws) < (nd2->num_p2_wins + nd1->num_draws); });
+                sq = (*it)->move;
+            }
+        }
+    }
+    m_board[sq] = m_side_to_move;
+    ToggleSideToMove();
+    return sq;
+}
+
+int TicTacToe::MakeStochasticGameTreeMove(const std::unique_ptr<TicTacToeTree>& gt)
+{
+    int key = GetKey(m_board);
+    Node* n = gt->Find(key);
+    std::vector<Node*> v;
+    int sq {-1};
+
+    auto engine = std::default_random_engine(std::random_device()());
+    auto pred = m_side_to_move == 1
+            ? [](Node* nd) { return nd->score > 0; }
+            : [](Node* nd) { return nd->score < 0; };
+
+    // check if there is a winning move for the current player
+    std::copy_if(n->children.begin(), n->children.end(), std::back_inserter(v), pred);
+    if(!v.empty())
+    {
+        // select a random winning move
+        std::uniform_int_distribution<int> dist(0, v.size()-1);
+        sq = v[dist(engine)]->move;
+    }
+    else
+    {
+        // no winning move, select a ramdom non-losing move
+        std::copy_if(n->children.begin(), n->children.end(), std::back_inserter(v), [](Node* nd) { return nd->score == 0; });
+        if(!v.empty())
+        {
+            std::uniform_int_distribution<int> dist(0, v.size()-1);
+            sq = v[dist(engine)]->move;
+        }
+        else
+        {
+            // all moves are loosing, select a random move
+            std::uniform_int_distribution<int> dist(0, n->children.size()-1);
+            sq = n->children[dist(engine)]->move;
+        }
+    }
+
+    m_board[sq] = m_side_to_move;
+    ToggleSideToMove();
+    return sq;
 }
 
 /*
