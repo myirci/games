@@ -43,11 +43,13 @@ public:
     int MakeLogicalMove();
     int MakeGameTreeMove(const std::unique_ptr<TicTacToeTree>& gt);
     int MakeStochasticGameTreeMove(const std::unique_ptr<TicTacToeTree>& gt);
-    // int MakeMiniMaxMove(Symbol s, bool max_player);
+    int MakeStochasticMiniMaxMove();
+    int MakeMiniMaxMove();
 
 private:
     int m_side_to_move;
     Board m_board;
     std::vector<int> GetEmptySquareIndexes() const;
-    void ToggleSideToMove();
+    inline void ToggleSideToMove();
+    int GetMiniMaxScore(bool maxPlayer);
 };

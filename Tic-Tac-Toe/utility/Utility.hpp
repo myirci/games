@@ -59,6 +59,7 @@ enum class PlayerType : std::int8_t
     Computer_Perfect,
     Computer_PerfectStochastic,
     Computer_Minimax,
+    Computer_MinimaxStochastic,
     Computer_MonteCarloTreeSearch
 };
 

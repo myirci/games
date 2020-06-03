@@ -56,6 +56,7 @@ BEGIN_EVENT_TABLE(TicTacToeMainFrame, wxFrame)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT_STOCHASTIC, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MINIMAX, TicTacToeMainFrame::OnChangePlayerType)
+    EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MINIMAX_STOCHASTIC, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER2_HUMAN, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_RANDOMLY, TicTacToeMainFrame::OnChangePlayerType)
@@ -63,6 +64,7 @@ BEGIN_EVENT_TABLE(TicTacToeMainFrame, wxFrame)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT_STOCHASTIC, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINIMAX, TicTacToeMainFrame::OnChangePlayerType)
+    EVT_MENU(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINIMAX_STOCHASTIC, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MCTS, TicTacToeMainFrame::OnChangePlayerType)
     EVT_MENU(wxID_MENU_HELP_ABOUT, TicTacToeMainFrame::OnAbout)
 END_EVENT_TABLE()
@@ -75,9 +77,10 @@ const wxRichTextAttr TicTacToeMainFrame::LightGreyText = wxRichTextAttr(wxTextAt
 const std::string TicTacToeMainFrame::HUMAN_PLAYER = "Human";
 const std::string TicTacToeMainFrame::COMPUTER_PLAYER_RANDOM = "Computer plays randomly";
 const std::string TicTacToeMainFrame::COMPUTER_PLAYER_SIMPLE_LOGIC = "Computer plays with simple logic";
-const std::string TicTacToeMainFrame::COMPUTER_PLAYER_PERFECT_GAME_TREE = "Computer plays perfect using the precomputed game tree, moves are chosen deterministically";
-const std::string TicTacToeMainFrame::COMPUTER_PLAYER_PERFECT_GAME_TREE_STOCHASTIC = "Computer plays perfect using the precomputed game tree, moves are chosen randomly";
-const std::string TicTacToeMainFrame::COMPUTER_PLAYER_PERFECT_MINIMAX = "Computer plays perfect with minimax algorithm";
+const std::string TicTacToeMainFrame::COMPUTER_PLAYER_PERFECT_GAME_TREE = "Computer plays with the pre-computed game tree, moves are chosen deterministically";
+const std::string TicTacToeMainFrame::COMPUTER_PLAYER_PERFECT_GAME_TREE_STOCHASTIC = "Computer plays with the pre-computed game tree, moves are chosen randomly";
+const std::string TicTacToeMainFrame::COMPUTER_PLAYER_PERFECT_MINIMAX = "Computer plays with the minimax algorithm, selects the first winning/drawing/loosing move";
+const std::string TicTacToeMainFrame::COMPUTER_PLAYER_PERFECT_MINIMAX_STOCHASTIC = "Computer plays with the minimax algorithm, selects the moves randomly among the winning, drawing or loosing moves";
 const std::string TicTacToeMainFrame::COMPUTER_PLAYER_MCTS = "Computer plays with monte-carlo-tree-search algorithm";
 
 TicTacToeMainFrame::TicTacToeMainFrame(
@@ -185,6 +188,7 @@ void TicTacToeMainFrame::CreateMenu()
     playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT, COMPUTER_PLAYER_PERFECT_GAME_TREE);
     playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_PERFECT_STOCHASTIC, COMPUTER_PLAYER_PERFECT_GAME_TREE_STOCHASTIC);
     playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MINIMAX, COMPUTER_PLAYER_PERFECT_MINIMAX);
+    playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MINIMAX_STOCHASTIC, COMPUTER_PLAYER_PERFECT_MINIMAX_STOCHASTIC);
     playerOneMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS, COMPUTER_PLAYER_MCTS);
 
     wxMenu* playerTwoMenu = new wxMenu();
@@ -194,6 +198,7 @@ void TicTacToeMainFrame::CreateMenu()
     playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT, COMPUTER_PLAYER_PERFECT_GAME_TREE);
     playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_PERFECT_STOCHASTIC, COMPUTER_PLAYER_PERFECT_GAME_TREE_STOCHASTIC);
     playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINIMAX, COMPUTER_PLAYER_PERFECT_MINIMAX);
+    playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINIMAX_STOCHASTIC, COMPUTER_PLAYER_PERFECT_MINIMAX_STOCHASTIC);
     playerTwoMenu->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS, COMPUTER_PLAYER_MCTS);
 
     m_menuSettings->AppendRadioItem(wxID_MENU_SETTINGS_PLAYER1_X, wxT("Player1 is X"));
@@ -438,6 +443,10 @@ void TicTacToeMainFrame::OnChangePlayerType(wxCommandEvent& event)
         m_player1.type = PlayerType::Computer_Minimax;
         str.emplace_back("Player-1 is set to: " + COMPUTER_PLAYER_PERFECT_MINIMAX);
         break;
+    case wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MINIMAX_STOCHASTIC:
+        m_player1.type = PlayerType::Computer_Minimax;
+        str.emplace_back("Player-1 is set to: " + COMPUTER_PLAYER_PERFECT_MINIMAX_STOCHASTIC);
+        break;
     case wxID_MENU_SETTINGS_PLAYER1_COMPUTER_PLAYS_MCTS:
         m_player1.type = PlayerType::Computer_MonteCarloTreeSearch;
         str.emplace_back("Player-1 is set to: " + COMPUTER_PLAYER_MCTS);
@@ -475,6 +484,10 @@ void TicTacToeMainFrame::OnChangePlayerType(wxCommandEvent& event)
     case wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINIMAX:
         m_player2.type = PlayerType::Computer_Minimax;
         str.emplace_back("Player-2 is set to: " + COMPUTER_PLAYER_PERFECT_MINIMAX);
+        break;
+    case wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MINIMAX_STOCHASTIC:
+        m_player2.type = PlayerType::Computer_Minimax;
+        str.emplace_back("Player-2 is set to: " + COMPUTER_PLAYER_PERFECT_MINIMAX_STOCHASTIC);
         break;
     case wxID_MENU_SETTINGS_PLAYER2_COMPUTER_PLAYS_MCTS:
         m_player2.type = PlayerType::Computer_MonteCarloTreeSearch;
@@ -556,8 +569,10 @@ void TicTacToeMainFrame::RunGame()
         sq = m_logic->MakeStochasticGameTreeMove(m_gameTree);
         break;
     case PlayerType::Computer_Minimax:
-        // Not implemented yet!
-        sq = m_logic->MakeRandomMove();
+        sq = m_logic->MakeMiniMaxMove();
+        break;
+    case PlayerType::Computer_MinimaxStochastic:
+        sq = m_logic->MakeStochasticMiniMaxMove();
         break;
     case PlayerType::Computer_MonteCarloTreeSearch:
         // Not implemented yet!

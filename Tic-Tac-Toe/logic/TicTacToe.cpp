@@ -16,6 +16,7 @@
 #include <iterator>
 #include <random>
 #include <utility>
+#include <limits>
 
 TicTacToe::TicTacToe() : m_board{3,3,3,3,3,3,3,3,3}, m_side_to_move{1} { }
 
@@ -301,115 +302,164 @@ int TicTacToe::MakeStochasticGameTreeMove(const std::unique_ptr<TicTacToeTree>& 
     return sq;
 }
 
-/*
-int TicTacToe::MakeMiniMaxMove(Symbol s, bool max_player)
+int TicTacToe::MakeMiniMaxMove()
 {
-    auto empty_squares = get_empty_square_indexes();
-
-    Board b = m_board;
-
+    // get the empty squares: possible moves
+    auto empty_squares = GetEmptySquareIndexes();
     if(empty_squares.empty())
     {
         std::cerr << "Already a terminal state!" << std::endl;
         return -1;
     }
 
-    Square sq = (s == Symbol::X ? Square::x : Square::o);
-    std::vector<int> scores(empty_squares.size());
+    int win_score = m_side_to_move == 1 ? 1 : -1;
 
-    if(max_player)
-    {
-        for(int i = 0; i < empty_squares.size(); ++i)
-        {
-            b[empty_squares[i]] = sq;
-            scores[i] = min_value(b, (s == Symbol::X ? Square::o : Square::x));
-            b[i] = Square::e;
-            if(scores[i] > 0)
-            { // first winning move
-                m_board[empty_squares[i]] = sq;
-                return empty_squares[i];
-            }
-        }
-    }
-    else
-    {
-        for(int i = 0; i < empty_squares.size(); ++i)
-        {
-            b[empty_squares[i]] = sq;
-            scores[i] = max_value(b, (s == Symbol::X ? Square::o : Square::x));
-            b[i] = Square::e;
-            if(scores[i] < 0)
-            { // first winning move
-                m_board[empty_squares[i]] = sq;
-                return empty_squares[i];
-            }
-        }
-    }
+    int sq_draw{-1};
 
     for(int i = 0; i < empty_squares.size(); ++i)
     {
-        if(scores[i] == 0)
-        { // first drawing move
-            m_board[empty_squares[i]] = sq;
+        // make the move
+        m_board[empty_squares[i]] = m_side_to_move;
+
+        // compute the score of the current move for the current player
+        auto score = GetMiniMaxScore(m_side_to_move != 1);
+        if(score == win_score)
+        {
+            ToggleSideToMove();
             return empty_squares[i];
         }
+        else if(sq_draw == -1 && score == 0)
+        {
+            sq_draw = empty_squares[i];
+        }
+
+        // undo the move
+        m_board[empty_squares[i]] = 3;
     }
-    // else a make the fist move, it is losing though
-    m_board[empty_squares[0]] = sq;
+
+    if(sq_draw != -1)
+    {
+        m_board[sq_draw] = m_side_to_move;
+        ToggleSideToMove();
+        return sq_draw;
+    }
+
+    m_board[empty_squares[0]] = m_side_to_move;
+    ToggleSideToMove();
     return empty_squares[0];
-
 }
 
-int TicTacToe::max_value(Board& b, Square s) {
-
-    // if terminal node is reached
-    Result r = get_result(b);
-    if(r != Result::no_result)
-    {
-        if(r == Result::x_win)      return 1;
-        else if(r == Result::o_win) return -1;
-        else if(r == Result::draw)  return 0;
-    }
-
-    int score{-1};
-    Square sq = (s == Square::x ? Square::o : Square::x);
-    for(int i = 0; i < 9; ++i)
-    {
-        if(b[i] == Square::e)
-        {
-            b[i] = s;
-            score = std::max(score, min_value(b, sq));
-            b[i] = Square::e;
-        }
-    }
-    return score;
-}
-
-int TicTacToe::min_value(Board& b, Square s)
+int TicTacToe::MakeStochasticMiniMaxMove()
 {
-    // if terminal node is reached
-    Result r = get_result(b);
-    if(r != Result::no_result)
+    // get the empty squares: possible moves
+    auto empty_squares = GetEmptySquareIndexes();
+    if(empty_squares.empty())
     {
-        if(r == Result::x_win)      return 1;
-        else if(r == Result::o_win) return -1;
-        else if(r == Result::draw)  return 0;
+        std::cerr << "Already a terminal state!" << std::endl;
+        return -1;
     }
 
-    int score{1};
-    Square sq = (s == Square::x ? Square::o : Square::x);
-    for(int i = 0; i < 9; ++i)
+    // for each available move, compute a score
+    std::vector<int> scores(empty_squares.size());
+    for(int i = 0; i < empty_squares.size(); ++i)
     {
-        if(b[i] == Square::e)
+        // make the move
+        m_board[empty_squares[i]] = m_side_to_move;
+
+        // compute the score of the current move for the current player
+        scores[i] = GetMiniMaxScore(m_side_to_move != 1);
+
+        // undo the move
+        m_board[empty_squares[i]] = 3;
+    }
+
+    auto engine = std::default_random_engine(std::random_device()());
+    int sq{-1};
+    int ds = m_side_to_move == 1 ? 1 : -1;
+    std::vector<int> pos;
+
+    for(int i  = 0; i < scores.size(); i++)
+    {
+        if(scores[i] == ds)
         {
-            b[i] = s;
-            score = std::min(score, max_value(b, sq));
-            b[i] = Square::e;
+            pos.push_back(i);
         }
     }
+
+    if(!pos.empty())
+    {
+        std::uniform_int_distribution<int> dist(0, pos.size()-1);
+        sq = empty_squares[pos[dist(engine)]];
+    }
+    else
+    {
+        for(int i  = 0; i < scores.size(); i++)
+        {
+            if(scores[i] == 0)
+            {
+                pos.push_back(i);
+            }
+        }
+
+        if(!pos.empty())
+        {
+            std::uniform_int_distribution<int> dist(0, pos.size()-1);
+            sq = empty_squares[pos[dist(engine)]];
+        }
+        else
+        {
+            std::uniform_int_distribution<int> dist(0, empty_squares.size()-1);
+            sq = empty_squares[dist(engine)];
+        }
+    }
+
+    m_board[sq] = m_side_to_move;
+    ToggleSideToMove();
+    return sq;
+}
+
+int TicTacToe::GetMiniMaxScore(bool maxPlayer)
+{
+    // check if a terminal node is reached
+    switch (GetResult())
+    {
+    case Result::player1_win:
+        return 1;
+    case Result::player2_win:
+        return -1;
+    case Result::draw:
+        return 0;
+    default:
+        break;
+    }
+
+    int score = maxPlayer ? std::numeric_limits<int>::min() : std::numeric_limits<int>::max();
+
+    // player val
+    auto val = maxPlayer ? 1 : 2;
+
+    // iterate over the board
+    for(int i = 0; i < 9; ++i)
+    {
+        if(m_board[i] != 3)
+        {
+            continue;
+        }
+
+        // make the move
+        m_board[i] = val;
+
+        // keep the max/min score of the children based on the player type
+        score = maxPlayer
+                ? std::max(score, GetMiniMaxScore(false))
+                : std::min(score, GetMiniMaxScore(true));
+
+        // undo the move
+        m_board[i] = 3;
+    }
+
     return score;
 }
-*/
 
 std::vector<int> TicTacToe::GetEmptySquareIndexes() const
 {
