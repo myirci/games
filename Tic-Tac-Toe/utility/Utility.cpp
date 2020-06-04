@@ -60,6 +60,9 @@ std::unique_ptr<GameScore> Simulate(long num_sim, const Player& p1, const Player
             case PlayerType::Computer_MinimaxStochastic:
                 sq = logic->MakeStochasticMiniMaxMove();
                 break;
+            case PlayerType::Computer_NegamaxStochastic:
+                sq = logic->MakeStochasticNegaMaxMove();
+                break;
             case PlayerType::Computer_MonteCarloTreeSearch:
                 // Not implemented yet!
                 break;
