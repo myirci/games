@@ -430,14 +430,14 @@ int TicTacToe::MakeStochasticNegaMaxMove()
 
     // for each available move, compute a score
     std::vector<int> scores(empty_squares.size());
+    int maxPlayer = m_side_to_move == 1 ? -1 : 1;
     for(int i = 0; i < empty_squares.size(); ++i)
     {
         // make the move
         m_board[empty_squares[i]] = m_side_to_move;
 
         // compute the score of the current move for the current player
-        int maxPlayer = m_side_to_move == 1 ? -1 : 1;
-        scores[i] = GetNegaMaxScore(maxPlayer);
+        scores[i] = -GetNegaMaxScore(maxPlayer);
 
         // undo the move
         m_board[empty_squares[i]] = 3;
@@ -449,7 +449,7 @@ int TicTacToe::MakeStochasticNegaMaxMove()
 
     for(int i  = 0; i < scores.size(); i++)
     {
-        if(scores[i] == -1)
+        if(scores[i] == 1)
         {
             pos.push_back(i);
         }
@@ -536,9 +536,8 @@ int TicTacToe::GetNegaMaxScore(int maxPlayer)
     switch (GetResult())
     {
     case Result::player1_win:
-        return -1; // maxPayer * 1
     case Result::player2_win:
-        return -1; // maxPlayer * -1
+        return -1; // maxPayer * 1 = maxPlayer * -1 = -1
     case Result::draw:
         return 0;
     default:
