@@ -418,6 +418,75 @@ int TicTacToe::MakeStochasticMiniMaxMove()
     return sq;
 }
 
+int TicTacToe::MakeStochasticNegaMaxMove()
+{
+    // get the empty squares: possible moves
+    auto empty_squares = GetEmptySquareIndexes();
+    if(empty_squares.empty())
+    {
+        std::cerr << "Already a terminal state!" << std::endl;
+        return -1;
+    }
+
+    // for each available move, compute a score
+    std::vector<int> scores(empty_squares.size());
+    for(int i = 0; i < empty_squares.size(); ++i)
+    {
+        // make the move
+        m_board[empty_squares[i]] = m_side_to_move;
+
+        // compute the score of the current move for the current player
+        int maxPlayer = m_side_to_move == 1 ? -1 : 1;
+        scores[i] = GetNegaMaxScore(maxPlayer);
+
+        // undo the move
+        m_board[empty_squares[i]] = 3;
+    }
+
+    auto engine = std::default_random_engine(std::random_device()());
+    int sq{-1};
+    std::vector<int> pos;
+
+    for(int i  = 0; i < scores.size(); i++)
+    {
+        if(scores[i] == -1)
+        {
+            pos.push_back(i);
+        }
+    }
+
+    if(!pos.empty())
+    {
+        std::uniform_int_distribution<int> dist(0, pos.size()-1);
+        sq = empty_squares[pos[dist(engine)]];
+    }
+    else
+    {
+        for(int i  = 0; i < scores.size(); i++)
+        {
+            if(scores[i] == 0)
+            {
+                pos.push_back(i);
+            }
+        }
+
+        if(!pos.empty())
+        {
+            std::uniform_int_distribution<int> dist(0, pos.size()-1);
+            sq = empty_squares[pos[dist(engine)]];
+        }
+        else
+        {
+            std::uniform_int_distribution<int> dist(0, empty_squares.size()-1);
+            sq = empty_squares[dist(engine)];
+        }
+    }
+
+    m_board[sq] = m_side_to_move;
+    ToggleSideToMove();
+    return sq;
+}
+
 int TicTacToe::GetMiniMaxScore(bool maxPlayer)
 {
     // check if a terminal node is reached
@@ -467,9 +536,9 @@ int TicTacToe::GetNegaMaxScore(int maxPlayer)
     switch (GetResult())
     {
     case Result::player1_win:
-        return maxPlayer;
+        return -1; // maxPayer * 1
     case Result::player2_win:
-        return -maxPlayer;
+        return -1; // maxPlayer * -1
     case Result::draw:
         return 0;
     default:
@@ -493,82 +562,13 @@ int TicTacToe::GetNegaMaxScore(int maxPlayer)
         m_board[i] = val;
 
         // keep the max score of the children
-        score = std::max(score, GetNegaMaxScore(-maxPlayer));
+        score = std::max(score, -GetNegaMaxScore(-maxPlayer));
 
         // undo the move
         m_board[i] = 3;
     }
 
     return score;
-}
-
-int TicTacToe::MakeStochasticNegaMaxMove()
-{
-    // get the empty squares: possible moves
-    auto empty_squares = GetEmptySquareIndexes();
-    if(empty_squares.empty())
-    {
-        std::cerr << "Already a terminal state!" << std::endl;
-        return -1;
-    }
-
-    // for each available move, compute a score
-    std::vector<int> scores(empty_squares.size());
-    for(int i = 0; i < empty_squares.size(); ++i)
-    {
-        // make the move
-        m_board[empty_squares[i]] = m_side_to_move;
-
-        // compute the score of the current move for the current player
-        int maxPlayer = m_side_to_move == 1 ? -1 : 1;
-        scores[i] = GetNegaMaxScore(maxPlayer);
-
-        // undo the move
-        m_board[empty_squares[i]] = 3;
-    }
-
-    auto engine = std::default_random_engine(std::random_device()());
-    int sq{-1};
-    std::vector<int> pos;
-
-    for(int i  = 0; i < scores.size(); i++)
-    {
-        if(scores[i] == 1)
-        {
-            pos.push_back(i);
-        }
-    }
-
-    if(!pos.empty())
-    {
-        std::uniform_int_distribution<int> dist(0, pos.size()-1);
-        sq = empty_squares[pos[dist(engine)]];
-    }
-    else
-    {
-        for(int i  = 0; i < scores.size(); i++)
-        {
-            if(scores[i] == 0)
-            {
-                pos.push_back(i);
-            }
-        }
-
-        if(!pos.empty())
-        {
-            std::uniform_int_distribution<int> dist(0, pos.size()-1);
-            sq = empty_squares[pos[dist(engine)]];
-        }
-        else
-        {
-            std::uniform_int_distribution<int> dist(0, empty_squares.size()-1);
-            sq = empty_squares[dist(engine)];
-        }
-    }
-
-    m_board[sq] = m_side_to_move;
-    ToggleSideToMove();
-    return sq;
 }
 
 std::vector<int> TicTacToe::GetEmptySquareIndexes() const
@@ -588,4 +588,3 @@ void TicTacToe::ToggleSideToMove()
 {
     m_side_to_move = (m_side_to_move == 1 ? 2 : 1);
 }
-
