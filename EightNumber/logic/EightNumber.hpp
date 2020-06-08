@@ -1,11 +1,12 @@
 /*
  *
- * Murat Yirci - Copyright 2014
+ * Murat Yirci - Copyright 2020
  *
  * Contact: myirci@gmail.com
  *
  *
 */
+
 #ifndef EIGHT_NUMBER_HPP
 #define EIGHT_NUMBER_HPP
 
@@ -18,14 +19,14 @@
 class EightNumber
 {
 public:
-    typedef std::array<uint8_t, 9> Board;
-    typedef std::pair<Board, std::vector<uint8_t>> Board_and_Moves;
+    using Board = std::array<uint8_t, 9>;
+    using Board_and_Moves = std::pair<Board, std::vector<uint8_t>>;
 private:
     static const std::array<Board, 9> m_graph;
     Board m_board;
 
 public:
-    // constructors
+
     EightNumber(Board&& b);
     EightNumber(const Board& b);
 
@@ -60,15 +61,15 @@ public:
     bool SolveAStar(std::vector<uint8_t>& moves) const;
 
 private:
-    inline void print_board(const Board& board) const;
-    inline bool is_solved(const Board& board) const;
-    inline bool is_solvable(const Board& board) const;
-    inline size_t get_position(const Board& board, uint8_t val) const;
-    inline std::string get_board_as_string(const Board& board) const;
-    inline unsigned int get_board_as_uint(const Board& board) const;
-    inline void next_boards(const Board& board, std::vector<Board>& next) const;
-    inline uint8_t inversion(const Board& board) const;
-    bool recursive_dfs(Board_and_Moves& node, std::unordered_set<unsigned int>& hash_table) const;
+    inline void PrintBoard(const Board& board) const;
+    inline bool IsSolved(const Board& board) const;
+    inline bool IsSolvable(const Board& board) const;
+    inline size_t GetPosition(const Board& board, uint8_t val) const;
+    inline std::string GetBoardAsString(const Board& board) const;
+    inline unsigned int GetBoardAsUint(const Board& board) const;
+    inline void NextBoards(const Board& board, std::vector<Board>& next) const;
+    inline uint8_t Inversion(const Board& board) const;
+    bool RecursiveDFS(Board_and_Moves& node, std::unordered_set<unsigned int>& hash_table) const;
 };
 
 #endif // EIGHT_NUMBER_HPP

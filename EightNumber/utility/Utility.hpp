@@ -1,11 +1,12 @@
 /*
  *
- * Murat Yirci - Copyright 2014
+ * Murat Yirci - Copyright 2020
  *
  * Contact: myirci@gmail.com
  *
  *
 */
+
 #ifndef UTILITY_HPP
 #define UTILITY_HPP
 
