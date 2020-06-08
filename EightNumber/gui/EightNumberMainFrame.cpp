@@ -9,6 +9,9 @@
 
 #include <cstdint>
 #include <sstream>
+#include <chrono>
+#include <thread>
+
 #include "EightNumberMainFrame.hpp"
 #include "../logic/EightNumber.hpp"
 #include "../utility/Utility.hpp"
@@ -61,7 +64,8 @@ EightNumberMainFrame::EightNumberMainFrame(
         long style) :
     wxFrame(parent, id, title, pos, size, style),
     m_logic(new EightNumber({1,2,3,4,5,6,7,8,0})),
-    m_move_count(0),
+    m_move_count{0},
+    m_simulate{nullptr},
     m_initial_board({1,2,3,4,5,6,7,8,0}){
 
     // set the minimum size of the frame
@@ -126,15 +130,15 @@ void EightNumberMainFrame::DisplayHeader()
     m_richText->DoWriteText(wxString(GetDateAndTime()));
     m_richText->DoWriteText(wxString("Eight Number program is started"));
     m_richText->EndBold();
-    m_richText->AddParagraph("-----------------------------------------------------------------------------------");
+    m_richText->AddParagraph("----------------------------------------------------------------------------------");
     m_richText->Refresh();
 }
 
 void EightNumberMainFrame::AddText(const std::string& str)
 {
     m_richText->AddParagraph(str);
+    m_richText->AddParagraph("----------------------------------------------------------------------------------");
     m_richText->Refresh();
-    m_richText->AddParagraph("-----------------------------------------------------------------------------------");
 }
 
 void EightNumberMainFrame::CreateBitmapButtons(wxGridSizer* gSizer) {
@@ -161,36 +165,32 @@ void EightNumberMainFrame::SetButtonBitmaps(const std::array<uint8_t, 9>& board)
 
 void EightNumberMainFrame::CreateMenu() {
 
-    m_menubar = new wxMenuBar(0);
-    m_menuFile = new wxMenu();
+    wxMenuBar* menuBar = new wxMenuBar(0);
+    wxMenu* menuFile = new wxMenu();
 
-    wxMenuItem* newPuzzle = new wxMenuItem(m_menuFile, wxID_MENU_FILE_NEW, "New Puzzle", wxEmptyString, wxITEM_NORMAL);
-    m_menuFile->Append(newPuzzle);
-
-    wxMenuItem* restartPuzzle = new wxMenuItem(m_menuFile, wxID_MENU_FILE_RESTART, "Restart Current Puzzle", wxEmptyString, wxITEM_NORMAL);
-    m_menuFile->Append(restartPuzzle);
-
-    m_menubar->Append(m_menuFile, "File");
+    menuFile->Append(new wxMenuItem(menuFile, wxID_MENU_FILE_NEW, "New Puzzle", wxEmptyString, wxITEM_NORMAL));
+    menuFile->Append(new wxMenuItem(menuFile, wxID_MENU_FILE_RESTART, "Restart Current Puzzle", wxEmptyString, wxITEM_NORMAL));
+    menuBar->Append(menuFile, "File");
 
     wxMenu* solveMenu = new wxMenu();
+    m_simulate = new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_SIMULATE_IN_GUI, "Apply Solution", "Simulate Solution in the GUI", wxITEM_CHECK);
+    solveMenu->Append(m_simulate);
+    solveMenu->Append(new wxMenuItem(solveMenu, wxID_SEPARATOR, "","", wxITEM_SEPARATOR));
     solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_BFS, "BFS","Breadth First Search", wxITEM_NORMAL));
     solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_DFS, "Non-recursive DFS", "Non-recursive Depth First Search", wxITEM_NORMAL));
     solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_RECURSIVE_DFS, "Recursive DFS", "Recursive Depth First Search", wxITEM_NORMAL));
     solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING, "Iterative Deepening", "Iterative Deepening Search", wxITEM_NORMAL));
     solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_A_STAR, "A Star", "A Star Search", wxITEM_NORMAL));
-    m_menuFile->AppendSubMenu(solveMenu, "Solve");
+    menuFile->AppendSubMenu(solveMenu, "Solve");
 
-    wxMenuItem* clearTxt = new wxMenuItem(m_menuFile, wxID_MENU_FILE_CLEAR_TEXT_AREA, "Clear Text", wxEmptyString, wxITEM_NORMAL);
-    m_menuFile->Append(clearTxt);
+    menuFile->Append(new wxMenuItem(menuFile, wxID_MENU_FILE_CLEAR_TEXT_AREA, "Clear Text", wxEmptyString, wxITEM_NORMAL));
 
-    m_menuHelp = new wxMenu();
-    wxMenuItem* m_mItemAbout;
-    m_mItemAbout = new wxMenuItem(m_menuHelp, wxID_MENU_HELP_ABOUT, "About", wxEmptyString, wxITEM_NORMAL);
-    m_menuHelp->Append(m_mItemAbout);
+    wxMenu* menuHelp = new wxMenu();
+    menuHelp->Append(new wxMenuItem(menuHelp, wxID_MENU_HELP_ABOUT, "About", wxEmptyString, wxITEM_NORMAL));
 
-    m_menubar->Append(m_menuHelp, "Help");
+    menuBar->Append(menuHelp, "Help");
 
-    this->SetMenuBar(m_menubar);
+    this->SetMenuBar(menuBar);
 }
 
 void EightNumberMainFrame::UpdateStatusBarText()
@@ -200,19 +200,7 @@ void EightNumberMainFrame::UpdateStatusBarText()
 
 void EightNumberMainFrame::OnClickButton(wxCommandEvent& event)
 {
-    auto clicked_pos = static_cast<size_t>(event.GetId() - 1000);
-    auto empty_pos = m_logic->GetPosition(0);
-    if(m_logic->UpdateBoard(clicked_pos))
-    {
-        m_buttons[empty_pos]->SetBitmap(m_buttons[clicked_pos]->GetBitmap());
-        m_buttons[clicked_pos]->SetBitmap(m_bitmaps[0]);
-        ++m_move_count;
-        UpdateStatusBarText();
-        if(m_logic->IsSolved())
-        {
-            AddText("Solved in " + std::to_string(m_move_count) + " moves.");
-        }
-    }
+    PerformClick(static_cast<size_t>(event.GetId() - 1000));
 }
 
 void EightNumberMainFrame::OnNewPuzzle(wxCommandEvent& event)
@@ -220,6 +208,7 @@ void EightNumberMainFrame::OnNewPuzzle(wxCommandEvent& event)
     m_logic->Shuffle();
     SetButtonBitmaps(m_logic->GetBoard());
     m_move_count = 0;
+    UpdateStatusBarText();
     m_initial_board = m_logic->GetBoard();
     m_solution.clear();
     m_logic->SolveBFS(m_solution);
@@ -290,6 +279,37 @@ void EightNumberMainFrame::OnSolvePuzzle(wxCommandEvent& event)
         ss << "Could not be solved";
     }
     AddText(ss.str());
+
+    if(m_simulate->IsChecked())
+    {
+        AddText("Simulating the solution.");
+        int simPauseTime{0};
+        if(moves.size() < 50)
+        {
+            simPauseTime = 500;
+        }
+        else if(moves.size() < 100)
+        {
+            simPauseTime = 250;
+        }
+        else if(moves.size() < 500)
+        {
+            simPauseTime = 100;
+        }
+        else if(moves.size() < 1000)
+        {
+            simPauseTime = 25;
+        }
+
+        for(auto m : moves)
+        {
+            if(simPauseTime != 0)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(simPauseTime));
+            }
+            PerformClick(m_logic->GetPosition(m));
+        }
+    }
 }
 
 void EightNumberMainFrame::OnAbout(wxCommandEvent& event)
@@ -298,11 +318,18 @@ void EightNumberMainFrame::OnAbout(wxCommandEvent& event)
     AddText("myirci@gmail.com - Copyright 2020");
 }
 
-
-
-
-
-
-
-
-
+void EightNumberMainFrame::PerformClick(std::size_t clickedPos)
+{
+    auto emptyPos = m_logic->GetPosition(0);
+    if(m_logic->UpdateBoard(clickedPos))
+    {
+        m_buttons[emptyPos]->SetBitmap(m_buttons[clickedPos]->GetBitmap());
+        m_buttons[clickedPos]->SetBitmap(m_bitmaps[0]);
+        ++m_move_count;
+        UpdateStatusBarText();
+        if(m_logic->IsSolved())
+        {
+            AddText("Solved in " + std::to_string(m_move_count) + " moves.");
+        }
+    }
+}

@@ -36,6 +36,7 @@ enum
     wxID_MENU_FILE_SOLVE_A_STAR,
     wxID_MENU_FILE_RESTART,
     wxID_MENU_FILE_CLEAR_TEXT_AREA,
+    wxID_MENU_FILE_SOLVE_SIMULATE_IN_GUI,
     wxID_MENU_HELP_ABOUT
 };
 
@@ -45,6 +46,8 @@ class wxRichTextCtrl;
 class wxPanel;
 class wxGridSizer;
 class wxRichTextAttr;
+class wxMenuItem;
+class wxStatusBar;
 
 class EightNumberMainFrame : public wxFrame
 {
@@ -60,10 +63,7 @@ private:
     wxBitmapButton* m_buttons[9];
     wxRichTextCtrl* m_richText;
     wxPanel* m_panel;
-
-    wxMenuBar* m_menubar;
-    wxMenu* m_menuFile;
-    wxMenu* m_menuHelp;
+    wxMenuItem* m_simulate;
     wxStatusBar* m_statusBar;
 
     std::array<uint8_t, 9> m_initial_board;
@@ -85,6 +85,7 @@ private:
     void SetButtonBitmaps(const std::array<uint8_t, 9>& board);
     void CreateMenu();
     void UpdateStatusBarText();
+    void PerformClick(std::size_t clickedPos);
 
     // Rich text attributes
     static const wxRichTextAttr RedText;

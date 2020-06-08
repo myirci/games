@@ -89,7 +89,7 @@ bool EightNumber::IsSolvable() const
 
 bool EightNumber::UpdateBoard(size_t pos)
 {
-    for(size_t i = 0; i < 9; ++i)
+    for(size_t i = 0; i < 9; i++)
     {
         if(m_graph[pos][i])
         {
@@ -127,7 +127,7 @@ void EightNumber::NextBoards(std::vector<Board>& next) const
 bool EightNumber::SolveBFS(Moves& moves) const
 {
     std::queue<BoardAndMoves> nodes;
-    std::unordered_set<unsigned int> hashTable;
+    HashTable hashTable;
     bool solved = false;
 
     // step-1: push the current node to the queue and the hash table
@@ -149,15 +149,15 @@ bool EightNumber::SolveBFS(Moves& moves) const
         }
 
         // step-2.3: find the empty tile position on the current board
-        size_t empty_pos = GetPosition(currentNode.first, 0);
+        size_t emptyPos = GetPosition(currentNode.first, 0);
 
         // step-2.4: generate the next possible nodes
-        for(size_t i = 0; i < 9; ++i)
+        for(size_t i = 0; i < 9; i++)
         {
-            if(m_graph[empty_pos][i])
+            if(m_graph[emptyPos][i])
             {
                 // update the board of the current node
-                currentNode.first[empty_pos] = currentNode.first[i];
+                currentNode.first[emptyPos] = currentNode.first[i];
                 currentNode.first[i] = 0;
 
                 // if the current node has not been explored before
@@ -165,7 +165,7 @@ bool EightNumber::SolveBFS(Moves& moves) const
                 if(ret.second)
                 {
                     // update the move of the current board and push it to the queue
-                    currentNode.second.push_back(currentNode.first[empty_pos]);
+                    currentNode.second.push_back(currentNode.first[emptyPos]);
                     nodes.push(currentNode);
 
                     // take back the move
@@ -173,8 +173,8 @@ bool EightNumber::SolveBFS(Moves& moves) const
                 }
 
                 // restore the board
-                currentNode.first[i] = currentNode.first[empty_pos];
-                currentNode.first[empty_pos] = 0;
+                currentNode.first[i] = currentNode.first[emptyPos];
+                currentNode.first[emptyPos] = 0;
             }
         }
 
@@ -191,8 +191,8 @@ bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
 
     std::stack<BoardAndMoves> nodes;
     BoardAndMoves currentNode;
-    std::unordered_set<unsigned int> hashTable;
-    std::pair<std::unordered_set<unsigned int>::iterator, bool> ret;
+    HashTable hashTable;
+    std::pair<HashTable::iterator, bool> ret;
 
     // step-1: push the current node to the stack and the hash table
     nodes.push(BoardAndMoves(m_board, Moves()));
@@ -214,15 +214,15 @@ bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
         nodes.pop();
 
         // step-2.3: find the empty tile position in the current board
-        size_t empty_pos = GetPosition(currentNode.first, 0);
+        size_t emptyPos = GetPosition(currentNode.first, 0);
 
         // step-2.4: generate the next possible nodes
-        for(size_t i = 0; i < 9; ++i)
+        for(size_t i = 0; i < 9; i++)
         {
-            if(m_graph[empty_pos][i])
+            if(m_graph[emptyPos][i])
             {
                 // update the board of the current node
-                currentNode.first[empty_pos] = currentNode.first[i];
+                currentNode.first[emptyPos] = currentNode.first[i];
                 currentNode.first[i] = 0;
 
                 // if the current node has not been explored before
@@ -230,7 +230,7 @@ bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
                 if(ret.second)
                 {
                     // update the move of the current board and push it to the stack
-                    currentNode.second.push_back(currentNode.first[empty_pos]);
+                    currentNode.second.push_back(currentNode.first[emptyPos]);
                     nodes.push(currentNode);
 
                     // take back the move
@@ -238,8 +238,8 @@ bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
                 }
 
                 // restore the board
-                currentNode.first[i] = currentNode.first[empty_pos];
-                currentNode.first[empty_pos] = 0;
+                currentNode.first[i] = currentNode.first[emptyPos];
+                currentNode.first[emptyPos] = 0;
             }
         }
     }
@@ -249,66 +249,53 @@ bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
 
 bool EightNumber::SolveRecursiveDFS(Moves& moves) const
 {
-    // step-1: generate the first node
-    BoardAndMoves node(m_board, Moves());
+    // step-1: push the current node to the hash table
+    HashTable hashTable;
+    auto board = m_board;
+    hashTable.insert(GetBoardAsUint(board));
 
-    // step-2: push the current node to the hash table
-    std::unordered_set<unsigned int> hashTable;
-    hashTable.insert(GetBoardAsUint(node.first));
-
-    // step-3: call the recursive function for the current node
-    auto res = RecursiveDFS(node, hashTable);
-
-    if(res)
-    {
-        std::copy(node.second.begin(), node.second.end(), std::back_inserter(moves));
-    }
-
-    return res;
+    // step-2: call the recursive function for the current node
+    return RecursiveDFS(board, hashTable, moves);
 }
 
-bool EightNumber::RecursiveDFS(BoardAndMoves& node, std::unordered_set<unsigned int>& hash_table) const
+bool EightNumber::RecursiveDFS(Board& board, HashTable& hashTable, Moves& moves) const
 {
-    static int i = 0;
-    std::cout << ++i << " ";
-
-    // step-1: check the base condition, i.e., if the current node is a solution or not
-    if(IsSolved(node.first)) return true;
-
-    // step-2: find the empty tile position on the current board
-    size_t empty_pos = GetPosition(node.first, 0);
-
-    // step-3: process the possible next nodes
-    for(size_t i = 0; i < 9; ++i)
+    // step-1: check whether the current node is a solution or not
+    if(IsSolved(board))
     {
-        if(m_graph[empty_pos][i])
-        {
-            // update the board of the current node
-            node.first[empty_pos] = node.first[i];
-            node.first[i] = 0;
-
-            // check if the current board has been processed before
-            auto ret = hash_table.insert(GetBoardAsUint(node.first));
-            if(ret.second)
-            {
-                // update the move of the current node
-                node.second.push_back(node.first[empty_pos]);
-
-                // call the recursive function for the current node
-                if(RecursiveDFS(node, hash_table))
-                {
-                    return true;
-                }
-
-                // take back move
-                node.second.pop_back();
-            }
-
-            //restore the board
-            node.first[i] = node.first[empty_pos];
-            node.first[empty_pos] = 0;
-        }
+        return true;
     }
+
+    // step-2: process the possible next moves
+    auto emptyPos = GetPosition(board, 0);
+    for(size_t i = 0; i < 9; i++)
+    {
+        if(m_graph[emptyPos][i] == 0)
+        {
+            continue;
+        }
+
+        // make the move
+        board[emptyPos] = board[i];
+        board[i] = 0;
+        moves.push_back(board[emptyPos]);
+
+        // check if the current board has been processed before
+        auto ret = hashTable.insert(GetBoardAsUint(board));
+        if(ret.second)
+        {
+            if(RecursiveDFS(board, hashTable, moves))
+            {
+                return true;
+            }
+        }
+
+        // undo the move
+        board[i] = board[emptyPos];
+        board[emptyPos] = 0;
+        moves.pop_back();
+    }
+
     return false;
 }
 
@@ -356,17 +343,17 @@ bool EightNumber::IsSolvable(const Board& board) const
 void EightNumber::NextBoards(const Board& board, std::vector<Board>& next) const
 {
     Board current_board = board;
-    size_t empty_pos = GetPosition(board, 0);
+    size_t emptyPos = GetPosition(board, 0);
 
-    for(size_t i = 0; i < 9; ++i)
+    for(size_t i = 0; i < 9; i++)
     {
-        if(m_graph[empty_pos][i])
+        if(m_graph[emptyPos][i])
         {
-            current_board[empty_pos] = current_board[i];
+            current_board[emptyPos] = current_board[i];
             current_board[i] = 0;
             next.push_back(current_board);
-            current_board[i] = current_board[empty_pos];
-            current_board[empty_pos] = 0;
+            current_board[i] = current_board[emptyPos];
+            current_board[emptyPos] = 0;
         }
     }
 }
@@ -378,10 +365,12 @@ void EightNumber::PrintBoard(const Board& board) const
 
 size_t EightNumber::GetPosition(const Board& board, uint8_t val) const
 {
-    for(size_t i = 0; i < 9; ++i)
+    for(size_t i = 0; i < 9; i++)
     {
         if(board[i] == val)
+        {
             return i;
+        }
     }
     return 9;
 }
@@ -389,7 +378,7 @@ size_t EightNumber::GetPosition(const Board& board, uint8_t val) const
 uint8_t EightNumber::Inversion(const Board& board) const
 {
     uint8_t count = 0;
-    for(size_t i = 0; i < 9; ++i)
+    for(size_t i = 0; i < 9; i++)
     {
         if(board[i] == 0)
         {
