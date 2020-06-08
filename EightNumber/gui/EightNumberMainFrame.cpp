@@ -173,16 +173,11 @@ void EightNumberMainFrame::CreateMenu() {
     m_menubar->Append(m_menuFile, "File");
 
     wxMenu* solveMenu = new wxMenu();
-    wxMenuItem* bfs = new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_BFS, "BFS","Breadth First Search", wxITEM_NORMAL);
-    solveMenu->Append(bfs);
-    wxMenuItem* dfs = new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_DFS, "DFS", "Depth First Search", wxITEM_NORMAL);
-    solveMenu->Append(dfs);
-    wxMenuItem* rdfs = new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_RECURSIVE_DFS, "Recursive DFS", "Recursive Depth First Search", wxITEM_NORMAL);
-    solveMenu->Append(rdfs);
-    wxMenuItem* ids = new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING, "Iterative Deepening", "Iterative Deepening Search", wxITEM_NORMAL);
-    solveMenu->Append(ids);
-    wxMenuItem* ast = new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_A_STAR, "A Star", "A Star Search", wxITEM_NORMAL);
-    solveMenu->Append(ast);
+    solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_BFS, "BFS","Breadth First Search", wxITEM_NORMAL));
+    solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_DFS, "Non-recursive DFS", "Non-recursive Depth First Search", wxITEM_NORMAL));
+    solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_RECURSIVE_DFS, "Recursive DFS", "Recursive Depth First Search", wxITEM_NORMAL));
+    solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING, "Iterative Deepening", "Iterative Deepening Search", wxITEM_NORMAL));
+    solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_A_STAR, "A Star", "A Star Search", wxITEM_NORMAL));
     m_menuFile->AppendSubMenu(solveMenu, "Solve");
 
     wxMenuItem* clearTxt = new wxMenuItem(m_menuFile, wxID_MENU_FILE_CLEAR_TEXT_AREA, "Clear Text", wxEmptyString, wxITEM_NORMAL);
@@ -200,9 +195,7 @@ void EightNumberMainFrame::CreateMenu() {
 
 void EightNumberMainFrame::UpdateStatusBarText()
 {
-    // auto sz = this->GetSize();
-    // m_statusBar->SetStatusText(wxString(std::to_string(sz.GetWidth()) + ", " + std::to_string(sz.GetHeight())));
-    m_statusBar->SetStatusText(wxString("Move Counter: " + std::to_string(m_move_count)));
+    m_statusBar->SetStatusText("Move Counter: " + std::to_string(m_move_count));
 }
 
 void EightNumberMainFrame::OnClickButton(wxCommandEvent& event)
@@ -265,8 +258,8 @@ void EightNumberMainFrame::OnSolvePuzzle(wxCommandEvent& event)
         solved = m_logic->SolveBFS(moves);
         break;
     case wxID_MENU_FILE_SOLVE_DFS :
-        AddText("Solver: Depth First Search");
-        solved = m_logic->SolveDFS(moves);
+        AddText("Solver: Non-recursive Depth First Search");
+        solved = m_logic->SolveNonRecursiveDFS(moves);
         break;
     case wxID_MENU_FILE_SOLVE_RECURSIVE_DFS :
         AddText("Solver: Recursive Depth First Search");

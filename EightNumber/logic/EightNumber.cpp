@@ -124,90 +124,84 @@ void EightNumber::NextBoards(std::vector<Board>& next) const
     NextBoards(m_board, next);
 }
 
-bool EightNumber::SolveBFS(std::vector<uint8_t>& moves) const
+bool EightNumber::SolveBFS(Moves& moves) const
 {
-    std::queue<Board_and_Moves> nodes;
-    std::unordered_set<unsigned int> hash_table;
+    std::queue<BoardAndMoves> nodes;
+    std::unordered_set<unsigned int> hashTable;
     bool solved = false;
 
     // step-1: push the current node to the queue and the hash table
-    nodes.push(Board_and_Moves(m_board, std::vector<uint8_t>()));
-    hash_table.insert(GetBoardAsUint(m_board));
+    nodes.push(BoardAndMoves(m_board, Moves()));
+    hashTable.insert(GetBoardAsUint(m_board));
 
     // step-2: process the nodes in the queue
     while(!nodes.empty())
     {
-        // step-2-1: get a refrence to the front of the queue
-        Board_and_Moves& current_node = nodes.front();
+        // step-2.1: get a refrence to the front of the queue
+        BoardAndMoves& currentNode = nodes.front();
 
-        // step-2-2: check if the current node is a solution
-        if(IsSolved(current_node.first))
+        // step-2.2: check if the current node is a solution
+        if(IsSolved(currentNode.first))
         {
-            std::copy(current_node.second.begin(), current_node.second.end(), std::back_inserter(moves));
+            std::copy(currentNode.second.begin(), currentNode.second.end(), std::back_inserter(moves));
             solved = true;
             break;
         }
 
-        // step-2-3: find the empty tile position on the current board
-        size_t empty_pos = GetPosition(current_node.first, 0);
+        // step-2.3: find the empty tile position on the current board
+        size_t empty_pos = GetPosition(currentNode.first, 0);
 
-        // step-2-4: generate the next possible nodes
+        // step-2.4: generate the next possible nodes
         for(size_t i = 0; i < 9; ++i)
         {
             if(m_graph[empty_pos][i])
             {
                 // update the board of the current node
-                current_node.first[empty_pos] = current_node.first[i];
-                current_node.first[i] = 0;
+                currentNode.first[empty_pos] = currentNode.first[i];
+                currentNode.first[i] = 0;
 
                 // if the current node has not been explored before
-                auto ret = hash_table.insert(GetBoardAsUint(current_node.first));
+                auto ret = hashTable.insert(GetBoardAsUint(currentNode.first));
                 if(ret.second)
                 {
                     // update the move of the current board and push it to the queue
-                    current_node.second.push_back(current_node.first[empty_pos]);
-                    nodes.push(current_node);
+                    currentNode.second.push_back(currentNode.first[empty_pos]);
+                    nodes.push(currentNode);
 
                     // take back the move
-                    current_node.second.pop_back();
+                    currentNode.second.pop_back();
                 }
 
-                // take back the board
-                current_node.first[i] = current_node.first[empty_pos];
-                current_node.first[empty_pos] = 0;
+                // restore the board
+                currentNode.first[i] = currentNode.first[empty_pos];
+                currentNode.first[empty_pos] = 0;
             }
         }
 
-        // remove the processed node from the queue
+        // step-2.5: remove the processed node from the queue
         nodes.pop();
     }
-
-    std::cout << "Number of moves: " << moves.size() << std::endl;
-    std::cout << "Queue size at the end: " << nodes.size() << std::endl;
-    std::cout << "Number of valid nodes explored: " << hash_table.size() << std::endl;
-    std::cout << "--------------------------------------" << std::endl;
 
     return solved;
 }
 
-bool EightNumber::SolveDFS(std::vector<uint8_t>& moves) const
+bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
 {
-
     bool solved = false;
 
-    std::stack<Board_and_Moves> nodes;
-    Board_and_Moves current_node;
-    std::unordered_set<unsigned int> hash_table;
+    std::stack<BoardAndMoves> nodes;
+    BoardAndMoves currentNode;
+    std::unordered_set<unsigned int> hashTable;
     std::pair<std::unordered_set<unsigned int>::iterator, bool> ret;
 
     // step-1: push the current node to the stack and the hash table
-    nodes.push(Board_and_Moves(m_board, std::vector<uint8_t>()));
-    hash_table.insert(GetBoardAsUint(m_board));
+    nodes.push(BoardAndMoves(m_board, Moves()));
+    hashTable.insert(GetBoardAsUint(m_board));
 
     // step-2: process the nodes in the stack
     while(!nodes.empty())
     {
-        // step-2-1: check if the top of the stack is a solution
+        // step-2.1: check if the top of the stack is a solution
         if(IsSolved(nodes.top().first))
         {
             std::copy(nodes.top().second.begin(), nodes.top().second.end(), std::back_inserter(moves));
@@ -215,73 +209,65 @@ bool EightNumber::SolveDFS(std::vector<uint8_t>& moves) const
             break;
         }
 
-        //step-2-2: get a copy of the top node and remove it from the stack
-        current_node = nodes.top();
+        // step-2.2: get a copy of the top node and remove it from the stack
+        currentNode = nodes.top();
         nodes.pop();
 
-        // step-2-3: find the empty tile position in the current board
-        size_t empty_pos = GetPosition(current_node.first, 0);
+        // step-2.3: find the empty tile position in the current board
+        size_t empty_pos = GetPosition(currentNode.first, 0);
 
-        // step-2-4: generate the next possible nodes
+        // step-2.4: generate the next possible nodes
         for(size_t i = 0; i < 9; ++i)
         {
             if(m_graph[empty_pos][i])
             {
                 // update the board of the current node
-                current_node.first[empty_pos] = current_node.first[i];
-                current_node.first[i] = 0;
+                currentNode.first[empty_pos] = currentNode.first[i];
+                currentNode.first[i] = 0;
 
                 // if the current node has not been explored before
-                ret = hash_table.insert(GetBoardAsUint(current_node.first));
+                ret = hashTable.insert(GetBoardAsUint(currentNode.first));
                 if(ret.second)
                 {
                     // update the move of the current board and push it to the stack
-                    current_node.second.push_back(current_node.first[empty_pos]);
-                    nodes.push(current_node);
+                    currentNode.second.push_back(currentNode.first[empty_pos]);
+                    nodes.push(currentNode);
 
                     // take back the move
-                    current_node.second.pop_back();
+                    currentNode.second.pop_back();
                 }
 
-                // take back the board
-                current_node.first[i] = current_node.first[empty_pos];
-                current_node.first[empty_pos] = 0;
+                // restore the board
+                currentNode.first[i] = currentNode.first[empty_pos];
+                currentNode.first[empty_pos] = 0;
             }
         }
     }
 
-    std::cout << "Number of moves: " << moves.size() << std::endl;
-    std::cout << "Stack size at the end: " << nodes.size() << std::endl;
-    std::cout << "Number of valid nodes explored: " << hash_table.size() << std::endl;
-    std::cout << "--------------------------------------" << std::endl;
-
     return solved;
 }
 
-bool EightNumber::SolveRecursiveDFS(std::vector<uint8_t>& moves) const
+bool EightNumber::SolveRecursiveDFS(Moves& moves) const
 {
-    // Note: This function may crash due to the limited size of the stack.
-    //       If crashes, increase the stack size.
-
     // step-1: generate the first node
-    Board_and_Moves node(m_board, std::vector<uint8_t>());
+    BoardAndMoves node(m_board, Moves());
 
-    // step-2: push the current node to the hash_table
-    std::unordered_set<unsigned int> hash_table;
-    hash_table.insert(GetBoardAsUint(node.first));
+    // step-2: push the current node to the hash table
+    std::unordered_set<unsigned int> hashTable;
+    hashTable.insert(GetBoardAsUint(node.first));
 
     // step-3: call the recursive function for the current node
-    if(RecursiveDFS(node, hash_table))
+    auto res = RecursiveDFS(node, hashTable);
+
+    if(res)
     {
         std::copy(node.second.begin(), node.second.end(), std::back_inserter(moves));
     }
 
-    std::cout << "Number of moves: " << moves.size() << std::endl;
-    std::cout << "Number of valid nodes explored: " << hash_table.size() << std::endl;
-    std::cout << "--------------------------------------" << std::endl;
+    return res;
 }
 
-bool EightNumber::RecursiveDFS(Board_and_Moves& node, std::unordered_set<unsigned int>& hash_table) const
+bool EightNumber::RecursiveDFS(BoardAndMoves& node, std::unordered_set<unsigned int>& hash_table) const
 {
     static int i = 0;
     std::cout << ++i << " ";
@@ -326,14 +312,14 @@ bool EightNumber::RecursiveDFS(Board_and_Moves& node, std::unordered_set<unsigne
     return false;
 }
 
-bool EightNumber::SolveIterativeDeepening(std::vector<uint8_t>& moves) const
+bool EightNumber::SolveIterativeDeepening(Moves& moves) const
 {
-
+    return false;
 }
 
-bool EightNumber::SolveAStar(std::vector<uint8_t>& moves) const
+bool EightNumber::SolveAStar(Moves& moves) const
 {
-
+    return false;
 }
 
 std::string EightNumber::GetBoardAsString(const Board& board) const
