@@ -24,3 +24,4 @@ This repository contains three sepearate projects:
 3) Tetris: Processing, Java
 	- A modern tetris game with lock-down, hold piece and display of multiple next pieces.
 	- 15 levels
+	- Single thread
