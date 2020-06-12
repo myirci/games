@@ -1,4 +1,4 @@
-# games
+# games and puzzles
 Hobby games, testing environment for different search algorithms for game play and puzzle solving. 
 
 This repository contains three sepearate projects:
@@ -25,3 +25,6 @@ This repository contains three sepearate projects:
 	- A modern tetris game with lock-down, hold piece and display of multiple next pieces.
 	- 15 levels
 	- Single thread
+	
+4) Sudoku Solver: Processing, Java
+	- Have look at the documentation in the project for details.
