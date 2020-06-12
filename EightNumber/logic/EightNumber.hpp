@@ -72,6 +72,7 @@ private:
     inline void NextBoards(const Board& board, std::vector<Board>& next) const;
     inline uint8_t Inversion(const Board& board) const;
     bool RecursiveDFS(Board& board, HashTable& hashTable, Moves& moves) const;
+    bool RecursiveDFSDepthLimit(Board& board, HashTable& hashTable, Moves& moves, int depth) const;
 };
 
 #endif // EIGHT_NUMBER_HPP

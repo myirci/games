@@ -258,6 +258,33 @@ bool EightNumber::SolveRecursiveDFS(Moves& moves) const
     return RecursiveDFS(board, hashTable, moves);
 }
 
+bool EightNumber::SolveIterativeDeepening(Moves& moves) const
+{
+    int maxDepth = 50;
+    int depth = 1;
+
+    // push the current node to the hash table
+    HashTable hashTable;
+    auto board = m_board;
+    hashTable.insert(GetBoardAsUint(board));
+
+    while(depth <= maxDepth)
+    {
+        // get a copy of the hash table
+        auto ht = hashTable;
+
+        // step-2: call the recursive function for the current node
+        if(RecursiveDFSDepthLimit(board, ht, moves, depth))
+        {
+            return true;
+        }
+
+        depth++;
+    }
+
+    return false;
+}
+
 bool EightNumber::RecursiveDFS(Board& board, HashTable& hashTable, Moves& moves) const
 {
     // step-1: check whether the current node is a solution or not
@@ -299,8 +326,50 @@ bool EightNumber::RecursiveDFS(Board& board, HashTable& hashTable, Moves& moves)
     return false;
 }
 
-bool EightNumber::SolveIterativeDeepening(Moves& moves) const
+bool EightNumber::RecursiveDFSDepthLimit(Board& board, HashTable& hashTable, Moves& moves, int depth) const
 {
+    // step-1: check if a terminal node is reached
+    // step-1.1: check whether the current node is a solution or not
+    if(IsSolved(board))
+    {
+        return true;
+    }
+    // step-1.2: check if depth limit is reached
+    else if(depth == 0)
+    {
+        return false;
+    }
+
+    // step-2: process the possible next moves
+    auto emptyPos = GetPosition(board, 0);
+    for(size_t i = 0; i < 9; i++)
+    {
+        if(m_graph[emptyPos][i] == 0)
+        {
+            continue;
+        }
+
+        // make the move
+        board[emptyPos] = board[i];
+        board[i] = 0;
+        moves.push_back(board[emptyPos]);
+
+        // check if the current board has been processed before
+        auto ret = hashTable.insert(GetBoardAsUint(board));
+        if(ret.second)
+        {
+            if(RecursiveDFSDepthLimit(board, hashTable, moves, depth - 1))
+            {
+                return true;
+            }
+        }
+
+        // undo the move
+        board[i] = board[emptyPos];
+        board[emptyPos] = 0;
+        moves.pop_back();
+    }
+
     return false;
 }
 
