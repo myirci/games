@@ -27,4 +27,4 @@ This repository contains three sepearate projects:
 	- Single thread
 	
 4) Sudoku Solver: Processing, Java
-	- Have look at the documentation in the project for details.
+	- Have look at the documentation in the project for the details.
