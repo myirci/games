@@ -296,7 +296,7 @@ void EightNumberMainFrame::OnSolvePuzzle(wxCommandEvent& event)
         {
             simPauseTime = 100;
         }
-        else if(moves.size() < 1000)
+        else if(moves.size() <= 1000)
         {
             simPauseTime = 25;
         }

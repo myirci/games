@@ -41,7 +41,6 @@ public:
     size_t GetPosition(uint8_t val) const;
     const Board& GetBoard() const;
     std::string GetBoardAsString() const;
-    unsigned int GetBoardAsUnsignedInt() const;
 
     // print
     void PrintBoard() const;
@@ -71,8 +70,8 @@ private:
     inline unsigned int GetBoardAsUint(const Board& board) const;
     inline void NextBoards(const Board& board, std::vector<Board>& next) const;
     inline uint8_t Inversion(const Board& board) const;
-    bool RecursiveDFS(Board& board, HashTable& hashTable, Moves& moves) const;
-    bool RecursiveDFSDepthLimit(Board& board, HashTable& hashTable, Moves& moves, int depth) const;
+    bool RecursiveDFSDepthLimit(Board& board, Moves& moves, int depth) const;
+    bool RecursiveDFSDepthLimitAndHash(Board& board, HashTable& hashTable, Moves& moves, int depth) const;
 };
 
 #endif // EIGHT_NUMBER_HPP

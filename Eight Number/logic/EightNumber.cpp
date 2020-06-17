@@ -72,11 +72,6 @@ std::string EightNumber::GetBoardAsString() const
     return GetBoardAsString(m_board);
 }
 
-unsigned int EightNumber::GetBoardAsUnsignedInt() const
-{
-    return GetBoardAsUint(m_board);
-}
-
 bool EightNumber::IsSolved() const
 {
     return IsSolved(m_board);
@@ -249,13 +244,9 @@ bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
 
 bool EightNumber::SolveRecursiveDFS(Moves& moves) const
 {
-    // step-1: push the current node to the hash table
-    HashTable hashTable;
     auto board = m_board;
-    hashTable.insert(GetBoardAsUint(board));
-
-    // step-2: call the recursive function for the current node
-    return RecursiveDFS(board, hashTable, moves);
+    HashTable hashTable;
+    return RecursiveDFSDepthLimitAndHash(board, hashTable, moves, 1000);
 }
 
 bool EightNumber::SolveIterativeDeepening(Moves& moves) const
@@ -264,17 +255,11 @@ bool EightNumber::SolveIterativeDeepening(Moves& moves) const
     int depth = 1;
 
     // push the current node to the hash table
-    HashTable hashTable;
     auto board = m_board;
-    hashTable.insert(GetBoardAsUint(board));
-
     while(depth <= maxDepth)
     {
-        // get a copy of the hash table
-        auto ht = hashTable;
-
         // step-2: call the recursive function for the current node
-        if(RecursiveDFSDepthLimit(board, ht, moves, depth))
+        if(RecursiveDFSDepthLimit(board, moves, depth))
         {
             return true;
         }
@@ -285,19 +270,25 @@ bool EightNumber::SolveIterativeDeepening(Moves& moves) const
     return false;
 }
 
-bool EightNumber::RecursiveDFS(Board& board, HashTable& hashTable, Moves& moves) const
+bool EightNumber::RecursiveDFSDepthLimit(Board& board, Moves& moves, int depth) const
 {
-    // step-1: check whether the current node is a solution or not
+    // step-1: check if a terminal node is reached
+    // step-1.1: check whether the current node is a solution or not
     if(IsSolved(board))
     {
         return true;
+    }
+    // step-1.2: check if depth limit is reached
+    else if(depth == 0)
+    {
+        return false;
     }
 
     // step-2: process the possible next moves
     auto emptyPos = GetPosition(board, 0);
     for(size_t i = 0; i < 9; i++)
     {
-        if(m_graph[emptyPos][i] == 0)
+        if(m_graph[emptyPos][i] == 0 || (!moves.empty() && board[i] == moves.back()))
         {
             continue;
         }
@@ -307,14 +298,10 @@ bool EightNumber::RecursiveDFS(Board& board, HashTable& hashTable, Moves& moves)
         board[i] = 0;
         moves.push_back(board[emptyPos]);
 
-        // check if the current board has been processed before
-        auto ret = hashTable.insert(GetBoardAsUint(board));
-        if(ret.second)
+        // investigate children
+        if(RecursiveDFSDepthLimit(board, moves, depth - 1))
         {
-            if(RecursiveDFS(board, hashTable, moves))
-            {
-                return true;
-            }
+            return true;
         }
 
         // undo the move
@@ -326,7 +313,7 @@ bool EightNumber::RecursiveDFS(Board& board, HashTable& hashTable, Moves& moves)
     return false;
 }
 
-bool EightNumber::RecursiveDFSDepthLimit(Board& board, HashTable& hashTable, Moves& moves, int depth) const
+bool EightNumber::RecursiveDFSDepthLimitAndHash(Board& board, HashTable& hashTable, Moves& moves, int depth) const
 {
     // step-1: check if a terminal node is reached
     // step-1.1: check whether the current node is a solution or not
@@ -334,7 +321,7 @@ bool EightNumber::RecursiveDFSDepthLimit(Board& board, HashTable& hashTable, Mov
     {
         return true;
     }
-    // step-1.2: check if depth limit is reached
+    // step-1.2: check if depth limit is reached or the position has been explored before
     else if(depth == 0)
     {
         return false;
@@ -354,11 +341,11 @@ bool EightNumber::RecursiveDFSDepthLimit(Board& board, HashTable& hashTable, Mov
         board[i] = 0;
         moves.push_back(board[emptyPos]);
 
-        // check if the current board has been processed before
-        auto ret = hashTable.insert(GetBoardAsUint(board));
-        if(ret.second)
+        // explore the next boards
+        auto res = hashTable.insert(GetBoardAsUint(board));
+        if(res.second)
         {
-            if(RecursiveDFSDepthLimit(board, hashTable, moves, depth - 1))
+            if(RecursiveDFSDepthLimitAndHash(board, hashTable, moves, depth - 1))
             {
                 return true;
             }
@@ -372,6 +359,7 @@ bool EightNumber::RecursiveDFSDepthLimit(Board& board, HashTable& hashTable, Mov
 
     return false;
 }
+
 
 bool EightNumber::SolveAStar(Moves& moves) const
 {
