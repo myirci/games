@@ -214,28 +214,30 @@ bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
         // step-2.4: generate the next possible nodes
         for(size_t i = 0; i < 9; i++)
         {
-            if(m_graph[emptyPos][i])
+            if(m_graph[emptyPos][i] == 0)
             {
-                // update the board of the current node
-                currentNode.first[emptyPos] = currentNode.first[i];
-                currentNode.first[i] = 0;
-
-                // if the current node has not been explored before
-                ret = hashTable.insert(GetBoardAsUint(currentNode.first));
-                if(ret.second)
-                {
-                    // update the move of the current board and push it to the stack
-                    currentNode.second.push_back(currentNode.first[emptyPos]);
-                    nodes.push(currentNode);
-
-                    // take back the move
-                    currentNode.second.pop_back();
-                }
-
-                // restore the board
-                currentNode.first[i] = currentNode.first[emptyPos];
-                currentNode.first[emptyPos] = 0;
+                continue;
             }
+
+            // update the board of the current node
+            currentNode.first[emptyPos] = currentNode.first[i];
+            currentNode.first[i] = 0;
+
+            // if the current node has not been explored before
+            ret = hashTable.insert(GetBoardAsUint(currentNode.first));
+            if(ret.second)
+            {
+                // update the move of the current board and push it to the stack
+                currentNode.second.push_back(currentNode.first[emptyPos]);
+                nodes.push(currentNode);
+
+                // take back the move
+                currentNode.second.pop_back();
+            }
+
+            // restore the board
+            currentNode.first[i] = currentNode.first[emptyPos];
+            currentNode.first[emptyPos] = 0;
         }
     }
 

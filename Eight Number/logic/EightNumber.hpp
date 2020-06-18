@@ -56,7 +56,7 @@ public:
 
     // solvers
     bool SolveBFS(Moves& moves) const;
-    bool SolveNonRecursiveDFS(Moves& moves) const ;
+    bool SolveNonRecursiveDFS(Moves& moves) const;
     bool SolveRecursiveDFS(Moves& moves) const;
     bool SolveIterativeDeepening(Moves& moves) const;
     bool SolveAStar(Moves& moves) const;

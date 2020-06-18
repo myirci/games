@@ -19,7 +19,7 @@ This repository contains three sepearate projects:
 2) Eight Number: C++, WxWidgets
 	- Different search algorithms are implemented.
 	- Uninformed search: BFS, Non-recursive DFS, Recursive DFS, Iterative Deepening
-	- Informed search: A* (Not implemented yet.)
+	- Informed (heuristic) search: A* (Not implemented yet.)
 
 3) Tetris: Processing, Java
 	- A modern tetris game with lock-down, hold piece and display of multiple next pieces.
