@@ -15,6 +15,7 @@
 #include <vector>
 #include <cstdint>
 #include <unordered_set>
+#include <unordered_map>
 
 class EightNumber
 {
@@ -22,7 +23,8 @@ public:
     using Board = std::array<uint8_t, 9>;
     using Moves = std::vector<uint8_t>;
     using BoardAndMoves = std::pair<Board, Moves>;
-    using HashTable = std::unordered_set<unsigned int>;
+    using HashSet = std::unordered_set<unsigned int>;
+    using HashMap = std::unordered_map<unsigned int, int>;
 private:
     static const std::array<Board, 9> m_graph;
     Board m_board;
@@ -41,6 +43,8 @@ public:
     size_t GetPosition(uint8_t val) const;
     const Board& GetBoard() const;
     std::string GetBoardAsString() const;
+    int GetNumberOfMisplacedTiles() const;
+    int GetSumOfManhattanDistances() const;
 
     // print
     void PrintBoard() const;
@@ -55,10 +59,10 @@ public:
     void NextBoards(std::vector<Board>& boards) const;
 
     // solvers
-    bool SolveBFS(Moves& moves) const;
+    bool SolveBFS(Moves& moves, bool graphSearch) const;
     bool SolveNonRecursiveDFS(Moves& moves) const;
-    bool SolveRecursiveDFS(Moves& moves) const;
-    bool SolveIterativeDeepening(Moves& moves) const;
+    bool SolveDepthLimitedRecursiveDFS(Moves& moves, bool withHash) const;
+    bool SolveIterativeDeepening(Moves& moves, bool withHash) const;
     bool SolveAStar(Moves& moves) const;
 
 private:
@@ -70,8 +74,15 @@ private:
     inline unsigned int GetBoardAsUint(const Board& board) const;
     inline void NextBoards(const Board& board, std::vector<Board>& next) const;
     inline uint8_t Inversion(const Board& board) const;
-    bool RecursiveDFSDepthLimit(Board& board, Moves& moves, int depth) const;
-    bool RecursiveDFSDepthLimitAndHash(Board& board, HashTable& hashTable, Moves& moves, int depth) const;
+    int GetNumberOfMisplacedTiles(const Board& board) const;
+    int GetSumOfManhattanDistances(const Board& board) const;
+
+    bool SolveBFS_TreeSearch(Moves& moves) const;
+    bool SolveBFS_GraphSearch(Moves& moves) const;
+
+    bool RecursiveDFSDepthLimitNoHash(Board& board, Moves& moves, int depth) const;
+    bool RecursiveDFSDepthLimitWithHashSet(Board& board, HashSet& hashSet, Moves& moves, int depth) const;
+    bool RecursiveDFSDepthLimitWithHashMap(Board& board, HashMap& hashMap, Moves& moves, int depth) const;
 };
 
 #endif // EIGHT_NUMBER_HPP

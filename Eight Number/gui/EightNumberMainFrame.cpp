@@ -45,11 +45,17 @@ BEGIN_EVENT_TABLE(EightNumberMainFrame, wxFrame)
     EVT_MENU(wxID_MENU_FILE_NEW, EightNumberMainFrame::OnNewPuzzle)
     EVT_MENU(wxID_MENU_FILE_CLEAR_TEXT_AREA, EightNumberMainFrame::OnClearTextArea)
     EVT_MENU(wxID_MENU_FILE_RESTART, EightNumberMainFrame::OnRestartCurrentPuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_BFS, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_DFS, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_RECURSIVE_DFS, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_A_STAR, EightNumberMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_BFS_TREE_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_BFS_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_NON_RECURSIVE_DFS_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_DEPTH_LIMITED_RECURSIVE_DFS_TREE_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_DEPTH_LIMITED_RECURSIVE_DFS_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_TREE_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_NUM_MISPLACED_TILES, EightNumberMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_MANHATTAN_DISTANCE, EightNumberMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_NUM_MISPLACED_TILES, EightNumberMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_MANHATTAN_DISTANCE, EightNumberMainFrame::OnSolvePuzzle)
     EVT_MENU(wxID_MENU_HELP_ABOUT, EightNumberMainFrame::OnAbout)
 END_EVENT_TABLE()
 
@@ -173,16 +179,30 @@ void EightNumberMainFrame::CreateMenu() {
     menuBar->Append(menuFile, "File");
 
     wxMenu* solveMenu = new wxMenu();
+    wxMenu* uninformedSearchMenu = new wxMenu();
+    wxMenu* informedSearchMenu = new wxMenu();
     m_simulate = new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_SIMULATE_IN_GUI, "Apply Solution", "Simulate Solution in the GUI", wxITEM_CHECK);
     solveMenu->Append(m_simulate);
     solveMenu->Append(new wxMenuItem(solveMenu, wxID_SEPARATOR, "","", wxITEM_SEPARATOR));
-    solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_BFS, "BFS","Breadth First Search", wxITEM_NORMAL));
-    solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_DFS, "Non-recursive DFS", "Non-recursive Depth First Search", wxITEM_NORMAL));
-    solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_RECURSIVE_DFS, "Recursive DFS", "Recursive Depth First Search", wxITEM_NORMAL));
-    solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING, "Iterative Deepening", "Iterative Deepening Search", wxITEM_NORMAL));
-    solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_A_STAR, "A Star", "A Star Search", wxITEM_NORMAL));
-    menuFile->AppendSubMenu(solveMenu, "Solve");
 
+    uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_MENU_FILE_SOLVE_BFS_TREE_SEARCH, "BFS - Tree Search", "Breadth First Search - Tree Search", wxITEM_NORMAL));
+    uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_MENU_FILE_SOLVE_BFS_GRAPH_SEARCH, "BFS - Graph Search", "Breadth First Search - Graph Search", wxITEM_NORMAL));
+    uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_SEPARATOR, "","", wxITEM_SEPARATOR));
+    uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_MENU_FILE_SOLVE_NON_RECURSIVE_DFS_GRAPH_SEARCH, "Non-recursive DFS - Graph Search", "Non-recursive Depth First Search - Graph Search", wxITEM_NORMAL));
+    uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_MENU_FILE_SOLVE_DEPTH_LIMITED_RECURSIVE_DFS_TREE_SEARCH, "Depth Limitied Recursive DFS - Tree Search", "Depth Limited Recursive Depth First Search - Tree Search", wxITEM_NORMAL));
+    uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_MENU_FILE_SOLVE_DEPTH_LIMITED_RECURSIVE_DFS_GRAPH_SEARCH, "Depth Limitied Recursive DFS - Graph Search", "Depth Limited Recursive Depth First Search - Graph Search", wxITEM_NORMAL));
+    uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_SEPARATOR, "","", wxITEM_SEPARATOR));
+    uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_TREE_SEARCH, "Iterative Deepening - Tree Search", "Iterative Deepening Search - Tree Search", wxITEM_NORMAL));
+    uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_GRAPH_SEARCH, "Iterative Deepening - Graph Search", "Iterative Deepening Search - Graph Search", wxITEM_NORMAL));
+    solveMenu->AppendSubMenu(uninformedSearchMenu, "Uninformed Search");
+
+    informedSearchMenu->Append(new wxMenuItem(informedSearchMenu, wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_NUM_MISPLACED_TILES, "Greedy Search with Number of Misplaced Tiles Heuristic", "Greedy Search with Number of Correct Tiles Heuristic", wxITEM_NORMAL));
+    informedSearchMenu->Append(new wxMenuItem(informedSearchMenu, wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_MANHATTAN_DISTANCE, "Greedy Search with Manhattan Distance Heuristic", "Greedy Search with Manhattan Distance Heuristic", wxITEM_NORMAL));
+    informedSearchMenu->Append(new wxMenuItem(informedSearchMenu, wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_NUM_MISPLACED_TILES, "A Star Search with Number of Misplaced Tiles Heuristic", "A Star Search with Number of Correct Tiles Heuristic", wxITEM_NORMAL));
+    informedSearchMenu->Append(new wxMenuItem(informedSearchMenu, wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_MANHATTAN_DISTANCE, "A Star Search with Manhattan Distance Heuristic", "A Star Search with Manhattan Distance Heuristic", wxITEM_NORMAL));
+    solveMenu->AppendSubMenu(informedSearchMenu, "Informed Search");
+
+    menuFile->AppendSubMenu(solveMenu, "Solve");
     menuFile->Append(new wxMenuItem(menuFile, wxID_MENU_FILE_CLEAR_TEXT_AREA, "Clear Text", wxEmptyString, wxITEM_NORMAL));
 
     wxMenu* menuHelp = new wxMenu();
@@ -211,7 +231,7 @@ void EightNumberMainFrame::OnNewPuzzle(wxCommandEvent& event)
     UpdateStatusBarText();
     m_initial_board = m_logic->GetBoard();
     m_solution.clear();
-    m_logic->SolveBFS(m_solution);
+    m_logic->SolveBFS(m_solution,true);
     AddText("New puzzle: distance to solution: " + std::to_string(m_solution.size()));
 }
 
@@ -242,25 +262,49 @@ void EightNumberMainFrame::OnSolvePuzzle(wxCommandEvent& event)
     std::vector<uint8_t> moves;
     switch(event.GetId())
     {
-    case wxID_MENU_FILE_SOLVE_BFS :
-        AddText("Solver: Breadth First Search");
-        solved = m_logic->SolveBFS(moves);
+    case wxID_MENU_FILE_SOLVE_BFS_TREE_SEARCH:
+        AddText("Solver: Breadth First Search - Tree Search");
+        solved = m_logic->SolveBFS(moves, false);
         break;
-    case wxID_MENU_FILE_SOLVE_DFS :
-        AddText("Solver: Non-recursive Depth First Search");
+    case wxID_MENU_FILE_SOLVE_BFS_GRAPH_SEARCH:
+        AddText("Solver: Breadth First Search - Graph Search");
+        solved = m_logic->SolveBFS(moves, true);
+        break;
+    case wxID_MENU_FILE_SOLVE_NON_RECURSIVE_DFS_GRAPH_SEARCH:
+        AddText("Solver: Non-recursive Depth First Search - Graph Search");
         solved = m_logic->SolveNonRecursiveDFS(moves);
         break;
-    case wxID_MENU_FILE_SOLVE_RECURSIVE_DFS :
-        AddText("Solver: Recursive Depth First Search");
-        solved = m_logic->SolveRecursiveDFS(moves);
+    case wxID_MENU_FILE_SOLVE_DEPTH_LIMITED_RECURSIVE_DFS_TREE_SEARCH:
+        AddText("Solver: Depth Limited Recursive Depth First Search - Tree Search");
+        solved = m_logic->SolveDepthLimitedRecursiveDFS(moves, false);
         break;
-    case wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING:
-        AddText("Solver: Iterative Deepening Search");
-        solved = m_logic->SolveIterativeDeepening(moves);
+    case wxID_MENU_FILE_SOLVE_DEPTH_LIMITED_RECURSIVE_DFS_GRAPH_SEARCH:
+        AddText("Solver: Depth Limited Recursive Depth First Search - Graph Search");
+        solved = m_logic->SolveDepthLimitedRecursiveDFS(moves, true);
         break;
-    case wxID_MENU_FILE_SOLVE_A_STAR:
-        AddText("Solver: A Star Search");
-        solved = m_logic->SolveAStar(moves);
+    case wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_TREE_SEARCH:
+        AddText("Solver: Iterative Deepening Search - Tree Search");
+        solved = m_logic->SolveIterativeDeepening(moves, false);
+        break;
+    case wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_GRAPH_SEARCH:
+        AddText("Solver: Iterative Deepening Search - Graph Search");
+        solved = m_logic->SolveIterativeDeepening(moves, true);
+        break;
+    case wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_NUM_MISPLACED_TILES:
+        AddText("Solver: Greedy Search with Number of Correct Tiles Heuristic");
+        // solved = m_logic->SolveAStar(moves);
+        break;
+    case wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_MANHATTAN_DISTANCE:
+        AddText("Solver: Greedy Search with Manhattan Distance Heuristic");
+        // solved = m_logic->SolveAStar(moves);
+        break;
+    case wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_NUM_MISPLACED_TILES:
+        AddText("Solver: A Star Search with Number of Correct Tiles Heuristic");
+        // solved = m_logic->SolveAStar(moves);
+        break;
+    case wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_MANHATTAN_DISTANCE:
+        AddText("Solver: A Star Search with Manhattan Distance Heuristic");
+        // solved = m_logic->SolveAStar(moves);
         break;
     }
 
