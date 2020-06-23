@@ -7,8 +7,7 @@
  *
 */
 
-#ifndef EIGHT_NUMBERAPP_HPP
-#define EIGHT_NUMBERAPP_HPP
+#pragma once
 
 #include <wx/app.h>
 
@@ -18,5 +17,3 @@ public:
 };
 
 DECLARE_APP(EightNumberApp)
-
-#endif // EIGHTNUMBERAPP_HPP

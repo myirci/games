@@ -7,8 +7,7 @@
  *
 */
 
-#ifndef EIGHT_NUMBER_MAIN_FRAME_HPP
-#define EIGHT_NUMBER_MAIN_FRAME_HPP
+#pragma once
 
 #include <memory>
 #include <array>
@@ -29,7 +28,10 @@ enum
     wxID_BUTTON_7,
     wxID_BUTTON_8,
     wxID_MENU_FILE_NEW,
-    wxID_MENU_FILE_COMPUTE_STATE_SPACE_GRAPH,
+    wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_STANDARD,
+    wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_WEIGHTED,
+    wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_STANDARD,
+    wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_WEIGHTED,
     wxID_MENU_FILE_SOLVE_BFS_TREE_SEARCH,
     wxID_MENU_FILE_SOLVE_BFS_GRAPH_SEARCH,
     wxID_MENU_FILE_SOLVE_NON_RECURSIVE_DFS_GRAPH_SEARCH,
@@ -48,6 +50,7 @@ enum
 };
 
 class EightNumber;
+class StateSpaceGraph;
 class wxBitmapButton;
 class wxRichTextCtrl;
 class wxPanel;
@@ -66,6 +69,7 @@ public:
             long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL);
 private:
     std::unique_ptr<EightNumber> m_logic;
+    std::unique_ptr<StateSpaceGraph> m_ssg;
     wxBitmap m_bitmaps[9];
     wxBitmapButton* m_buttons[9];
     wxRichTextCtrl* m_richText;
@@ -81,6 +85,8 @@ private:
     void OnClickButton(wxCommandEvent& event);
     void OnNewPuzzle(wxCommandEvent& event);
     void OnRestartCurrentPuzzle(wxCommandEvent& event);
+    void OnComputeStateSpaceGraph(wxCommandEvent& event);
+    void OnExportStateSpaceGraph(wxCommandEvent& event);
     void OnSolvePuzzle(wxCommandEvent& event);
     void OnClearTextArea(wxCommandEvent& event);
     void OnAbout(wxCommandEvent& event);
@@ -99,5 +105,3 @@ private:
 
     DECLARE_EVENT_TABLE()
 };
-
-#endif // EIGHT_NUMBER_MAIN_FRAME_HPP

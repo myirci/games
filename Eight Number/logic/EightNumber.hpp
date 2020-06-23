@@ -7,13 +7,11 @@
  *
 */
 
-#ifndef EIGHT_NUMBER_HPP
-#define EIGHT_NUMBER_HPP
+#pragma once
 
 #include <string>
 #include <array>
 #include <vector>
-#include <cstdint>
 #include <unordered_set>
 #include <unordered_map>
 
@@ -25,38 +23,20 @@ public:
     using BoardAndMoves = std::pair<Board, Moves>;
     using HashSet = std::unordered_set<unsigned int>;
     using HashMap = std::unordered_map<unsigned int, int>;
+    static const std::array<Board, 9> TileGraph;
 private:
-    static const std::array<Board, 9> m_graph;
     Board m_board;
-
 public:
 
     EightNumber(Board&& b);
     EightNumber(const Board& b);
 
-    // setters
     void SetBoard(Board&& b);
     void SetBoard(const Board& b);
-
-    // getters
-    uint16_t GetValue(size_t pos) const;
-    size_t GetPosition(uint8_t val) const;
     const Board& GetBoard() const;
-    std::string GetBoardAsString() const;
-    int GetNumberOfMisplacedTiles() const;
-    int GetSumOfManhattanDistances() const;
-
-    // print
-    void PrintBoard() const;
-
-    // query
-    bool IsSolved() const;
-    bool IsSolvable() const;
-
-    // process
+    size_t GetPosition(uint8_t val) const;
     bool UpdateBoard(size_t pos);
     void Shuffle();
-    void NextBoards(std::vector<Board>& boards) const;
 
     // solvers
     bool SolveBFS(Moves& moves, bool graphSearch) const;
@@ -66,23 +46,8 @@ public:
     bool SolveAStar(Moves& moves) const;
 
 private:
-    inline void PrintBoard(const Board& board) const;
-    inline bool IsSolved(const Board& board) const;
-    inline bool IsSolvable(const Board& board) const;
-    inline size_t GetPosition(const Board& board, uint8_t val) const;
-    inline std::string GetBoardAsString(const Board& board) const;
-    inline unsigned int GetBoardAsUint(const Board& board) const;
-    inline void NextBoards(const Board& board, std::vector<Board>& next) const;
-    inline uint8_t Inversion(const Board& board) const;
-    int GetNumberOfMisplacedTiles(const Board& board) const;
-    int GetSumOfManhattanDistances(const Board& board) const;
-
     bool SolveBFS_TreeSearch(Moves& moves) const;
     bool SolveBFS_GraphSearch(Moves& moves) const;
-
-    bool RecursiveDFSDepthLimitNoHash(Board& board, Moves& moves, int depth) const;
-    bool RecursiveDFSDepthLimitWithHashSet(Board& board, HashSet& hashSet, Moves& moves, int depth) const;
-    bool RecursiveDFSDepthLimitWithHashMap(Board& board, HashMap& hashMap, Moves& moves, int depth) const;
+    bool DepthLimitedRecursiveDFS_TreeSearch(Board& board, Moves& moves, int depth) const;
+    bool DepthLimitedRecursiveDFS_GraphSearch(Board& board, HashMap& hashMap, Moves& moves, int depth) const;
 };
-
-#endif // EIGHT_NUMBER_HPP

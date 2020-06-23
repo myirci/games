@@ -14,6 +14,7 @@
 
 #include "EightNumberMainFrame.hpp"
 #include "../logic/EightNumber.hpp"
+#include "../logic/StateSpaceGraph.hpp"
 #include "../utility/Utility.hpp"
 
 #include <wx/bitmap.h>
@@ -31,6 +32,7 @@
 #include <wx/panel.h>
 #include <wx/statusbr.h>
 #include <wx/menu.h>
+#include <wx/filedlg.h>
 
 BEGIN_EVENT_TABLE(EightNumberMainFrame, wxFrame)
     EVT_BUTTON(wxID_BUTTON_0, EightNumberMainFrame::OnClickButton)
@@ -45,6 +47,10 @@ BEGIN_EVENT_TABLE(EightNumberMainFrame, wxFrame)
     EVT_MENU(wxID_MENU_FILE_NEW, EightNumberMainFrame::OnNewPuzzle)
     EVT_MENU(wxID_MENU_FILE_CLEAR_TEXT_AREA, EightNumberMainFrame::OnClearTextArea)
     EVT_MENU(wxID_MENU_FILE_RESTART, EightNumberMainFrame::OnRestartCurrentPuzzle)
+    EVT_MENU(wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_STANDARD, EightNumberMainFrame::OnComputeStateSpaceGraph)
+    EVT_MENU(wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_WEIGHTED, EightNumberMainFrame::OnComputeStateSpaceGraph)
+    EVT_MENU(wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_STANDARD, EightNumberMainFrame::OnExportStateSpaceGraph)
+    EVT_MENU(wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_WEIGHTED, EightNumberMainFrame::OnExportStateSpaceGraph)
     EVT_MENU(wxID_MENU_FILE_SOLVE_BFS_TREE_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
     EVT_MENU(wxID_MENU_FILE_SOLVE_BFS_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
     EVT_MENU(wxID_MENU_FILE_SOLVE_NON_RECURSIVE_DFS_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
@@ -69,11 +75,12 @@ EightNumberMainFrame::EightNumberMainFrame(
         const wxSize& size,
         long style) :
     wxFrame(parent, id, title, pos, size, style),
-    m_logic(new EightNumber({1,2,3,4,5,6,7,8,0})),
+    m_logic{new EightNumber({1,2,3,4,5,6,7,8,0})},
+    m_ssg{std::make_unique<StateSpaceGraph>()},
     m_move_count{0},
     m_simulate{nullptr},
-    m_initial_board({1,2,3,4,5,6,7,8,0}){
-
+    m_initial_board{{1,2,3,4,5,6,7,8,0}}
+{
     // set the minimum size of the frame
     this->SetMinSize(wxSize(720,360));
     // this->SetMaxSize(wxSize(720,360));
@@ -133,7 +140,7 @@ EightNumberMainFrame::EightNumberMainFrame(
 void EightNumberMainFrame::DisplayHeader()
 {
     m_richText->BeginBold();
-    m_richText->DoWriteText(wxString(GetDateAndTime()));
+    m_richText->DoWriteText(wxString(Utility::GetDateAndTime()));
     m_richText->DoWriteText(wxString("Eight Number program is started"));
     m_richText->EndBold();
     m_richText->AddParagraph("----------------------------------------------------------------------------------");
@@ -147,9 +154,10 @@ void EightNumberMainFrame::AddText(const std::string& str)
     m_richText->Refresh();
 }
 
-void EightNumberMainFrame::CreateBitmapButtons(wxGridSizer* gSizer) {
-
-    unsigned int ids[9] = {
+void EightNumberMainFrame::CreateBitmapButtons(wxGridSizer* gSizer)
+{
+    unsigned int ids[9] =
+    {
         wxID_BUTTON_0, wxID_BUTTON_1, wxID_BUTTON_2,
         wxID_BUTTON_3, wxID_BUTTON_4, wxID_BUTTON_5,
         wxID_BUTTON_6, wxID_BUTTON_7, wxID_BUTTON_8
@@ -157,26 +165,36 @@ void EightNumberMainFrame::CreateBitmapButtons(wxGridSizer* gSizer) {
 
     size_t bmaps[9] = { 1, 2, 3, 4, 5, 6, 7, 8, 0 };
 
-    for(size_t i = 0; i < 9; ++i) {
+    for(size_t i = 0; i < 9; ++i)
+    {
         m_buttons[i] = new wxBitmapButton(m_panel, ids[i], m_bitmaps[bmaps[i]], wxDefaultPosition, wxSize(96,96), wxBU_AUTODRAW);
         gSizer->Add(m_buttons[i], 0, wxALL, 5);
     }
 }
 
-void EightNumberMainFrame::SetButtonBitmaps(const std::array<uint8_t, 9>& board) {
-    for(size_t i = 0; i < 9; ++i) {
+void EightNumberMainFrame::SetButtonBitmaps(const std::array<uint8_t, 9>& board)
+{
+    for(size_t i = 0; i < 9; ++i)
+    {
         m_buttons[i]->SetBitmap(m_bitmaps[board[i]]);
     }
 }
 
-void EightNumberMainFrame::CreateMenu() {
-
+void EightNumberMainFrame::CreateMenu()
+{
     wxMenuBar* menuBar = new wxMenuBar(0);
     wxMenu* menuFile = new wxMenu();
 
     menuFile->Append(new wxMenuItem(menuFile, wxID_MENU_FILE_NEW, "New Puzzle", wxEmptyString, wxITEM_NORMAL));
     menuFile->Append(new wxMenuItem(menuFile, wxID_MENU_FILE_RESTART, "Restart Current Puzzle", wxEmptyString, wxITEM_NORMAL));
     menuBar->Append(menuFile, "File");
+
+    wxMenu* stateSpaceGraphMenu = new wxMenu();
+    stateSpaceGraphMenu->Append(new wxMenuItem(stateSpaceGraphMenu, wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_STANDARD, "Compute Standard 8-puzzle State Graph", "Compute standard 8-puzzle state space graph", wxITEM_NORMAL));
+    stateSpaceGraphMenu->Append(new wxMenuItem(stateSpaceGraphMenu, wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_WEIGHTED, "Compute Weighted 8-puzzle State Graph", "Compute state space graph for weighted 8-puzzle", wxITEM_NORMAL));
+    stateSpaceGraphMenu->Append(new wxMenuItem(stateSpaceGraphMenu, wxID_SEPARATOR, "", "", wxITEM_SEPARATOR));
+    stateSpaceGraphMenu->Append(new wxMenuItem(stateSpaceGraphMenu, wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_STANDARD, "Export Standard 8-puzzle Graph", "Export standard 8-puzzle state space graph to disk", wxITEM_NORMAL));
+    stateSpaceGraphMenu->Append(new wxMenuItem(stateSpaceGraphMenu, wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_WEIGHTED, "Export Weighted 8-puzzle Graph", "Export weighted 8-puzzle state space graph to disk", wxITEM_NORMAL));
 
     wxMenu* solveMenu = new wxMenu();
     wxMenu* uninformedSearchMenu = new wxMenu();
@@ -185,7 +203,7 @@ void EightNumberMainFrame::CreateMenu() {
     solveMenu->Append(m_simulate);
     solveMenu->Append(new wxMenuItem(solveMenu, wxID_SEPARATOR, "","", wxITEM_SEPARATOR));
 
-    uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_MENU_FILE_SOLVE_BFS_TREE_SEARCH, "BFS - Tree Search", "Breadth First Search - Tree Search", wxITEM_NORMAL));
+    uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_MENU_FILE_SOLVE_BFS_TREE_SEARCH, "Depth Limited BFS - Tree Search", "Depth Limited Breadth First Search - Tree Search", wxITEM_NORMAL));
     uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_MENU_FILE_SOLVE_BFS_GRAPH_SEARCH, "BFS - Graph Search", "Breadth First Search - Graph Search", wxITEM_NORMAL));
     uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_SEPARATOR, "","", wxITEM_SEPARATOR));
     uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_MENU_FILE_SOLVE_NON_RECURSIVE_DFS_GRAPH_SEARCH, "Non-recursive DFS - Graph Search", "Non-recursive Depth First Search - Graph Search", wxITEM_NORMAL));
@@ -202,8 +220,9 @@ void EightNumberMainFrame::CreateMenu() {
     informedSearchMenu->Append(new wxMenuItem(informedSearchMenu, wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_MANHATTAN_DISTANCE, "A Star Search with Manhattan Distance Heuristic", "A Star Search with Manhattan Distance Heuristic", wxITEM_NORMAL));
     solveMenu->AppendSubMenu(informedSearchMenu, "Informed Search");
 
-    menuFile->AppendSubMenu(solveMenu, "Solve");
     menuFile->Append(new wxMenuItem(menuFile, wxID_MENU_FILE_CLEAR_TEXT_AREA, "Clear Text", wxEmptyString, wxITEM_NORMAL));
+    menuFile->AppendSubMenu(stateSpaceGraphMenu, "State Space Graph");
+    menuFile->AppendSubMenu(solveMenu, "Solve");
 
     wxMenu* menuHelp = new wxMenu();
     menuHelp->Append(new wxMenuItem(menuHelp, wxID_MENU_HELP_ABOUT, "About", wxEmptyString, wxITEM_NORMAL));
@@ -250,9 +269,45 @@ void EightNumberMainFrame::OnRestartCurrentPuzzle(wxCommandEvent& event)
     AddText("Current puzzle restarted: distance to solution: " + std::to_string(m_solution.size()));
 }
 
+void EightNumberMainFrame::OnComputeStateSpaceGraph(wxCommandEvent& event)
+{
+    switch(event.GetId())
+    {
+    case wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_STANDARD:
+        m_ssg->ComputeStandardEightPuzzleStateSpaceGraph();
+        AddText("State space graph for standard 8-puzzle is computed.");
+        break;
+    case wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_WEIGHTED:
+        m_ssg->ComputeWeightedEightPuzzleStateSpaceGraph();
+        AddText("State space graph for weighted 8-puzzle is computed.");
+        break;
+    }
+}
+
+void EightNumberMainFrame::OnExportStateSpaceGraph(wxCommandEvent& event)
+{
+   wxFileDialog saveFileDialog(this, "Save State Graph into csv file", "", "", "CSV files (*.csv)|*.csv", wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
+   if (saveFileDialog.ShowModal() == wxID_CANCEL)
+   {
+       return;
+   }
+
+   switch(event.GetId())
+   {
+   case wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_STANDARD:
+       m_ssg->ExportStandardEightPuzzleStateSpaceGraph(saveFileDialog.GetPath().ToStdString());
+       AddText("State space graph for standard 8-puzzle is exported.");
+       break;
+   case wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_WEIGHTED:
+       m_ssg->ExportWeightedEightPuzzleStateSpaceGraph(saveFileDialog.GetPath().ToStdString());
+       AddText("State space graph for weighted 8-puzzle is exported.");
+       break;
+   }
+}
+
 void EightNumberMainFrame::OnSolvePuzzle(wxCommandEvent& event)
 {
-    if(m_logic->IsSolved())
+    if(Utility::IsSolved(m_logic->GetBoard()))
     {
         AddText("Already Solved!");
         return;
@@ -371,7 +426,7 @@ void EightNumberMainFrame::PerformClick(std::size_t clickedPos)
         m_buttons[clickedPos]->SetBitmap(m_bitmaps[0]);
         ++m_move_count;
         UpdateStatusBarText();
-        if(m_logic->IsSolved())
+        if(Utility::IsSolved(m_logic->GetBoard()))
         {
             AddText("Solved in " + std::to_string(m_move_count) + " moves.");
         }
