@@ -43,9 +43,12 @@ enum
     wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_MANHATTAN_DISTANCE,
     wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_NUM_MISPLACED_TILES,
     wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_MANHATTAN_DISTANCE,
+    wxID_MENU_FILE_SOLVE_WITH_STATE_SPACE_GRAPH,
     wxID_MENU_FILE_RESTART,
     wxID_MENU_FILE_CLEAR_TEXT_AREA,
     wxID_MENU_FILE_SOLVE_SIMULATE_IN_GUI,
+    wxID_MENU_FILE_GAME_MODE_STANDARD,
+    wxID_MENU_FILE_GAME_MODE_WEIGHTED,
     wxID_MENU_HELP_ABOUT
 };
 
@@ -80,6 +83,8 @@ private:
     std::array<uint8_t, 9> m_initial_board;
     std::vector<u_int8_t> m_solution;
     unsigned int m_move_count;
+    unsigned int m_cost;
+    bool m_standard_mode;
 
     // Handlers for MainFrame events.
     void OnClickButton(wxCommandEvent& event);
@@ -90,6 +95,7 @@ private:
     void OnSolvePuzzle(wxCommandEvent& event);
     void OnClearTextArea(wxCommandEvent& event);
     void OnAbout(wxCommandEvent& event);
+    void OnGameModeChange(wxCommandEvent& event);
 
     // Private member functions
     void DisplayHeader();
@@ -99,7 +105,7 @@ private:
     void CreateMenu();
     void UpdateStatusBarText();
     void PerformClick(std::size_t clickedPos);
-
+    bool CheckStateSpaceGraph(bool standardPuzzle);
     // Rich text attributes
     static const wxRichTextAttr RedText;
 

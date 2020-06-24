@@ -18,7 +18,6 @@
 #include <stack>
 #include <utility>
 
-
 // construct the connectivity graph
 const std::array<std::array<unsigned char, 9>,9> EightNumber::TileGraph =
 {{
@@ -43,7 +42,6 @@ EightNumber::EightNumber(const Board& b)
     std::copy(b.begin(), b.end(), m_board.begin());
 }
 
-
 void EightNumber::SetBoard(Board&& b)
 {
     m_board = std::move(b);
@@ -64,9 +62,14 @@ const EightNumber::Board& EightNumber::GetBoard() const
     return m_board;
 }
 
+uint8_t EightNumber::GetVal(size_t pos) const
+{
+    return m_board[pos];
+}
+
 bool EightNumber::UpdateBoard(size_t pos)
 {
-    for(size_t i = 0; i < 9; i++)
+    for(auto i = 0; i < 9; i++)
     {
         if(TileGraph[pos][i])
         {
@@ -211,18 +214,16 @@ bool EightNumber::SolveBFS_GraphSearch(Moves& moves) const
 bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
 {
     bool solved = false;
+    long num_expanded_nodes{0};
     std::stack<BoardAndMoves> nodes;
     BoardAndMoves currentNode;
     HashSet hashSet;
 
-    // step-1: push the current node to the stack and the hash table
     nodes.push(BoardAndMoves(m_board, Moves()));
     hashSet.insert(Utility::GetBoardAsUint(m_board));
 
-    // step-2: process the nodes in the stack
     while(!nodes.empty())
     {
-        // step-2.1: check if the top of the stack is a solution
         if(Utility::IsSolved(nodes.top().first))
         {
             std::copy(nodes.top().second.begin(), nodes.top().second.end(), std::back_inserter(moves));
@@ -230,15 +231,12 @@ bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
             break;
         }
 
-        // step-2.2: get a copy of the top node and remove it from the stack
         currentNode = nodes.top();
         nodes.pop();
+        num_expanded_nodes++;
 
-        // step-2.3: find the empty tile position in the current board
-        size_t emptyPos = Utility::GetPosition(currentNode.first, 0);
-
-        // step-2.4: generate the next possible nodes
-        for(size_t i = 0; i < 9; i++)
+        auto emptyPos = Utility::GetPosition(currentNode.first, 0);
+        for(auto i = 0; i < 9; i++)
         {
             if(TileGraph[emptyPos][i] == 0)
             {
@@ -266,12 +264,15 @@ bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
         }
     }
 
+    std::cout << "SolveNonRecursiveDFS: number of expanded nodes is " << num_expanded_nodes << std::endl;
+    std::cout << "SolveNonRecursiveDFS: number of nodes remained in the queue is " << nodes.size() << std::endl;
+
     return solved;
 }
 
 bool EightNumber::SolveDepthLimitedRecursiveDFS(Moves& moves, bool withHash) const
 {
-    int depthLimit{100};
+    int depthLimit{31};
     auto board = m_board;
     if(withHash)
     {
@@ -284,14 +285,12 @@ bool EightNumber::SolveDepthLimitedRecursiveDFS(Moves& moves, bool withHash) con
 
 bool EightNumber::SolveIterativeDeepening(Moves& moves, bool withHash) const
 {
-    int maxDepth = 50;
+    int maxDepth = 31;
     int depth = 1;
-
-    // push the current node to the hash set
     auto board = m_board;
+
     while(depth <= maxDepth)
     {
-        // step-2: call the recursive function for the current node
         if(withHash)
         {
             HashMap hashMap;
@@ -317,21 +316,17 @@ bool EightNumber::SolveIterativeDeepening(Moves& moves, bool withHash) const
 
 bool EightNumber::DepthLimitedRecursiveDFS_TreeSearch(Board& board, Moves& moves, int depth) const
 {
-    // step-1: check if a terminal node is reached
-    // step-1.1: check whether the current node is a solution or not
     if(Utility::IsSolved(board))
     {
         return true;
     }
-    // step-1.2: check if depth limit is reached
     else if(depth == 0)
     {
         return false;
     }
 
-    // step-2: process the possible next moves
     auto emptyPos = Utility::GetPosition(board, 0);
-    for(size_t i = 0; i < 9; i++)
+    for(auto i = 0; i < 9; i++)
     {
         if(TileGraph[emptyPos][i] == 0 || (!moves.empty() && board[i] == moves.back()))
         {
@@ -360,21 +355,17 @@ bool EightNumber::DepthLimitedRecursiveDFS_TreeSearch(Board& board, Moves& moves
 
 bool EightNumber::DepthLimitedRecursiveDFS_GraphSearch(Board& board, HashMap& hashMap, Moves& moves, int depth) const
 {
-    // step-1: check if a terminal node is reached
-    // step-1.1: check if the current board is a solution
     if(Utility::IsSolved(board))
     {
         return true;
     }
-    // step-1.2: check if the depth limit is reached
     else if(depth == 0)
     {
         return false;
     }
 
-    // step-2: process the possible next moves
     auto emptyPos = Utility::GetPosition(board, 0);
-    for(size_t i = 0; i < 9; i++)
+    for(auto i = 0; i < 9; i++)
     {
         if(TileGraph[emptyPos][i] == 0)
         {
@@ -415,6 +406,11 @@ bool EightNumber::DepthLimitedRecursiveDFS_GraphSearch(Board& board, HashMap& ha
         moves.pop_back();
     }
 
+    return false;
+}
+
+bool EightNumber::SolveGreedySearch(Moves& moves) const
+{
     return false;
 }
 

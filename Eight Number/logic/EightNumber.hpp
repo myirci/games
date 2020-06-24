@@ -35,6 +35,7 @@ public:
     void SetBoard(const Board& b);
     const Board& GetBoard() const;
     size_t GetPosition(uint8_t val) const;
+    uint8_t GetVal(size_t pos) const;
     bool UpdateBoard(size_t pos);
     void Shuffle();
 
@@ -44,7 +45,7 @@ public:
     bool SolveDepthLimitedRecursiveDFS(Moves& moves, bool withHash) const;
     bool SolveIterativeDeepening(Moves& moves, bool withHash) const;
     bool SolveAStar(Moves& moves) const;
-
+    bool SolveGreedySearch(Moves& moves) const;
 private:
     bool SolveBFS_TreeSearch(Moves& moves) const;
     bool SolveBFS_GraphSearch(Moves& moves) const;

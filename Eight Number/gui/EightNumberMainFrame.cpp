@@ -11,6 +11,7 @@
 #include <sstream>
 #include <chrono>
 #include <thread>
+#include <numeric>
 
 #include "EightNumberMainFrame.hpp"
 #include "../logic/EightNumber.hpp"
@@ -62,7 +63,10 @@ BEGIN_EVENT_TABLE(EightNumberMainFrame, wxFrame)
     EVT_MENU(wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_MANHATTAN_DISTANCE, EightNumberMainFrame::OnSolvePuzzle)
     EVT_MENU(wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_NUM_MISPLACED_TILES, EightNumberMainFrame::OnSolvePuzzle)
     EVT_MENU(wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_MANHATTAN_DISTANCE, EightNumberMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_WITH_STATE_SPACE_GRAPH, EightNumberMainFrame::OnSolvePuzzle)
     EVT_MENU(wxID_MENU_HELP_ABOUT, EightNumberMainFrame::OnAbout)
+    EVT_MENU(wxID_MENU_FILE_GAME_MODE_STANDARD, EightNumberMainFrame::OnGameModeChange)
+    EVT_MENU(wxID_MENU_FILE_GAME_MODE_WEIGHTED, EightNumberMainFrame::OnGameModeChange)
 END_EVENT_TABLE()
 
 const wxRichTextAttr EightNumberMainFrame::RedText = wxRichTextAttr(wxTextAttr(wxCOLOURED));
@@ -78,12 +82,14 @@ EightNumberMainFrame::EightNumberMainFrame(
     m_logic{new EightNumber({1,2,3,4,5,6,7,8,0})},
     m_ssg{std::make_unique<StateSpaceGraph>()},
     m_move_count{0},
+    m_cost{0},
+    m_standard_mode{true},
     m_simulate{nullptr},
     m_initial_board{{1,2,3,4,5,6,7,8,0}}
 {
     // set the minimum size of the frame
-    this->SetMinSize(wxSize(720,360));
-    // this->SetMaxSize(wxSize(720,360));
+    this->SetMinSize(wxSize(740,450));
+    this->SetMaxSize(wxSize(740,450));
 
     // create the bitmaps
     m_bitmaps[0] = wxBitmap(wxT("../resources/bos.png"), wxBITMAP_TYPE_ANY);
@@ -189,6 +195,12 @@ void EightNumberMainFrame::CreateMenu()
     menuFile->Append(new wxMenuItem(menuFile, wxID_MENU_FILE_RESTART, "Restart Current Puzzle", wxEmptyString, wxITEM_NORMAL));
     menuBar->Append(menuFile, "File");
 
+    wxMenu* menuGameMode = new wxMenu;
+    menuGameMode->Append(new wxMenuItem(menuGameMode, wxID_MENU_FILE_GAME_MODE_STANDARD, "Standard 8-Puzzle", "Game mode, standard eight puzlle", wxITEM_RADIO));
+    menuGameMode->Append(new wxMenuItem(menuGameMode, wxID_MENU_FILE_GAME_MODE_WEIGHTED, "Weighted 8-Puzzle", "Game mode, weighted eitht puzzle", wxITEM_RADIO));
+    menuFile->AppendSubMenu(menuGameMode, "Game Mode");
+
+
     wxMenu* stateSpaceGraphMenu = new wxMenu();
     stateSpaceGraphMenu->Append(new wxMenuItem(stateSpaceGraphMenu, wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_STANDARD, "Compute Standard 8-puzzle State Graph", "Compute standard 8-puzzle state space graph", wxITEM_NORMAL));
     stateSpaceGraphMenu->Append(new wxMenuItem(stateSpaceGraphMenu, wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_WEIGHTED, "Compute Weighted 8-puzzle State Graph", "Compute state space graph for weighted 8-puzzle", wxITEM_NORMAL));
@@ -220,6 +232,8 @@ void EightNumberMainFrame::CreateMenu()
     informedSearchMenu->Append(new wxMenuItem(informedSearchMenu, wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_MANHATTAN_DISTANCE, "A Star Search with Manhattan Distance Heuristic", "A Star Search with Manhattan Distance Heuristic", wxITEM_NORMAL));
     solveMenu->AppendSubMenu(informedSearchMenu, "Informed Search");
 
+    solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_WITH_STATE_SPACE_GRAPH, "Solve with State Space Graph", "Use State Space Graph to Solve the Puzzle", wxITEM_NORMAL));
+
     menuFile->Append(new wxMenuItem(menuFile, wxID_MENU_FILE_CLEAR_TEXT_AREA, "Clear Text", wxEmptyString, wxITEM_NORMAL));
     menuFile->AppendSubMenu(stateSpaceGraphMenu, "State Space Graph");
     menuFile->AppendSubMenu(solveMenu, "Solve");
@@ -234,7 +248,12 @@ void EightNumberMainFrame::CreateMenu()
 
 void EightNumberMainFrame::UpdateStatusBarText()
 {
-    m_statusBar->SetStatusText("Move Counter: " + std::to_string(m_move_count));
+    std::string str = "Move Counter: " + std::to_string(m_move_count);
+    if(!m_standard_mode)
+    {
+        str += ",  Cost: " + std::to_string(m_cost);
+    }
+    m_statusBar->SetStatusText(str);
 }
 
 void EightNumberMainFrame::OnClickButton(wxCommandEvent& event)
@@ -247,6 +266,7 @@ void EightNumberMainFrame::OnNewPuzzle(wxCommandEvent& event)
     m_logic->Shuffle();
     SetButtonBitmaps(m_logic->GetBoard());
     m_move_count = 0;
+    m_cost = 0;
     UpdateStatusBarText();
     m_initial_board = m_logic->GetBoard();
     m_solution.clear();
@@ -286,23 +306,39 @@ void EightNumberMainFrame::OnComputeStateSpaceGraph(wxCommandEvent& event)
 
 void EightNumberMainFrame::OnExportStateSpaceGraph(wxCommandEvent& event)
 {
-   wxFileDialog saveFileDialog(this, "Save State Graph into csv file", "", "", "CSV files (*.csv)|*.csv", wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
-   if (saveFileDialog.ShowModal() == wxID_CANCEL)
-   {
-       return;
-   }
+    switch(event.GetId())
+    {
+    case wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_STANDARD:
+        if(!CheckStateSpaceGraph(true))
+        {
+            return;
+        }
+        break;
+    case wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_WEIGHTED:
+        if(!CheckStateSpaceGraph(false))
+        {
+            return;
+        }
+        break;
+    }
 
-   switch(event.GetId())
-   {
-   case wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_STANDARD:
-       m_ssg->ExportStandardEightPuzzleStateSpaceGraph(saveFileDialog.GetPath().ToStdString());
-       AddText("State space graph for standard 8-puzzle is exported.");
-       break;
-   case wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_WEIGHTED:
-       m_ssg->ExportWeightedEightPuzzleStateSpaceGraph(saveFileDialog.GetPath().ToStdString());
-       AddText("State space graph for weighted 8-puzzle is exported.");
-       break;
-   }
+    wxFileDialog saveFileDialog(this, "Save State Graph into csv file", "", "", "CSV files (*.csv)|*.csv", wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
+    if (saveFileDialog.ShowModal() == wxID_CANCEL)
+    {
+        return;
+    }
+
+    switch(event.GetId())
+    {
+    case wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_STANDARD:
+        m_ssg->ExportStandardEightPuzzleStateSpaceGraph(saveFileDialog.GetPath().ToStdString());
+        AddText("State space graph for standard 8-puzzle is exported.");
+        break;
+    case wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_WEIGHTED:
+        m_ssg->ExportWeightedEightPuzzleStateSpaceGraph(saveFileDialog.GetPath().ToStdString());
+        AddText("State space graph for weighted 8-puzzle is exported.");
+        break;
+    }
 }
 
 void EightNumberMainFrame::OnSolvePuzzle(wxCommandEvent& event)
@@ -361,6 +397,13 @@ void EightNumberMainFrame::OnSolvePuzzle(wxCommandEvent& event)
         AddText("Solver: A Star Search with Manhattan Distance Heuristic");
         // solved = m_logic->SolveAStar(moves);
         break;
+    case wxID_MENU_FILE_SOLVE_WITH_STATE_SPACE_GRAPH:
+        if(CheckStateSpaceGraph(m_standard_mode))
+        {
+            AddText("Solver: Use State Space Graph to Solve the Puzzle");
+            solved = m_ssg->GetPathToGoalState(Utility::GetBoardAsUint(m_logic->GetBoard()), moves, m_standard_mode);
+        }
+        break;
     }
 
     std::stringstream ss;
@@ -371,6 +414,12 @@ void EightNumberMainFrame::OnSolvePuzzle(wxCommandEvent& event)
         {
             ss << static_cast<int>(*it);
             if(std::next(it) != moves.end()) ss << " -> ";
+        }
+
+        if(!m_standard_mode)
+        {
+            auto total_cost = std::accumulate(moves.begin(), moves.end(), 0);
+            ss << ", total cost is " << total_cost;
         }
     }
     else
@@ -411,6 +460,22 @@ void EightNumberMainFrame::OnSolvePuzzle(wxCommandEvent& event)
     }
 }
 
+void EightNumberMainFrame::OnGameModeChange(wxCommandEvent& event)
+{
+    switch(event.GetId())
+    {
+    case wxID_MENU_FILE_GAME_MODE_STANDARD:
+        m_standard_mode = true;
+        AddText("Game mode is set to standard 8-puzzle.");
+        break;
+    case wxID_MENU_FILE_GAME_MODE_WEIGHTED:
+        m_standard_mode = false;
+        AddText("Game mode is set to weighted 8-puzzle.");
+        break;
+    }
+    UpdateStatusBarText();
+}
+
 void EightNumberMainFrame::OnAbout(wxCommandEvent& event)
 {
     AddText("This program incorporates different search algorithms for 8-number puzzle.");
@@ -425,10 +490,40 @@ void EightNumberMainFrame::PerformClick(std::size_t clickedPos)
         m_buttons[emptyPos]->SetBitmap(m_buttons[clickedPos]->GetBitmap());
         m_buttons[clickedPos]->SetBitmap(m_bitmaps[0]);
         ++m_move_count;
+        m_cost += m_logic->GetVal(emptyPos);
         UpdateStatusBarText();
         if(Utility::IsSolved(m_logic->GetBoard()))
         {
-            AddText("Solved in " + std::to_string(m_move_count) + " moves.");
+            std::string str = "Solved in " + std::to_string(m_move_count) + " moves";
+            if(m_standard_mode)
+            {
+                str += ".";
+            }
+            else
+            {
+                str = str + " with " + std::to_string(m_cost) + " total cost.";
+            }
+            AddText(str);
         }
     }
+}
+
+bool EightNumberMainFrame::CheckStateSpaceGraph(bool standardPuzzle)
+{
+    if(standardPuzzle)
+    {
+        if(m_ssg->IsStandardEightPuzzleStateSpaceGraphComputed())
+        {
+            return true;
+        }
+    }
+    else
+    {
+        if(m_ssg->IsWeightedEightPuzzleStateSpaceGraphComputed())
+        {
+            return true;
+        }
+    }
+    AddText("State space graph is not computed, please compute the graph first via File->State State Graph menu");
+    return false;
 }

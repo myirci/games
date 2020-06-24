@@ -17,10 +17,11 @@
 
 struct Node
 {
-    Node(const std::array<uint8_t, 9>& b, int dtg, int mtg);
+    Node(const std::array<uint8_t, 9>& b, int dtg, int mtg, unsigned int stg);
     std::array<uint8_t, 9> board;
     int dist_to_goal;
     int move_to_goal;
+    unsigned int successor_to_goal;
     std::vector<unsigned int> successors;
 };
 
@@ -31,6 +32,9 @@ private:
     std::unique_ptr<std::unordered_map<unsigned int, Node>> m_wnodes;
 public:
     StateSpaceGraph();
+    bool IsStandardEightPuzzleStateSpaceGraphComputed() const;
+    bool IsWeightedEightPuzzleStateSpaceGraphComputed() const;
+    bool GetPathToGoalState(unsigned int initialKey, std::vector<uint8_t>& moves, bool stdPuzzle) const;
     void ComputeStandardEightPuzzleStateSpaceGraph();
     void ComputeWeightedEightPuzzleStateSpaceGraph();
     int ExportStandardEightPuzzleStateSpaceGraph(const std::string& fname) const;
