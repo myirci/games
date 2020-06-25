@@ -39,6 +39,7 @@ enum
     wxID_MENU_FILE_SOLVE_DEPTH_LIMITED_RECURSIVE_DFS_GRAPH_SEARCH,
     wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_TREE_SEARCH,
     wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_GRAPH_SEARCH,
+    wxID_MENU_FILE_SOLVE_UNIFORM_COST_SEARCH,
     wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_NUM_MISPLACED_TILES,
     wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_MANHATTAN_DISTANCE,
     wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_NUM_MISPLACED_TILES,
@@ -106,6 +107,8 @@ private:
     void UpdateStatusBarText();
     void PerformClick(std::size_t clickedPos);
     bool CheckStateSpaceGraph(bool standardPuzzle);
+    void DebugConfiguration();
+
     // Rich text attributes
     static const wxRichTextAttr RedText;
 

@@ -15,6 +15,19 @@
 #include <unordered_set>
 #include <unordered_map>
 
+struct UCSNode
+{
+    UCSNode(const std::array<uint8_t, 9>& b,
+            unsigned int c,
+            const std::vector<uint8_t>& mv) :
+        board{b}, cost{c}, moves{mv}
+    { }
+
+    std::array<uint8_t, 9> board;
+    unsigned int cost;
+    std::vector<uint8_t> moves;
+};
+
 class EightNumber
 {
 public:
@@ -46,6 +59,7 @@ public:
     bool SolveIterativeDeepening(Moves& moves, bool withHash) const;
     bool SolveAStar(Moves& moves) const;
     bool SolveGreedySearch(Moves& moves) const;
+    bool SolveUniformCostSearch(Moves& moves) const;
 private:
     bool SolveBFS_TreeSearch(Moves& moves) const;
     bool SolveBFS_GraphSearch(Moves& moves) const;

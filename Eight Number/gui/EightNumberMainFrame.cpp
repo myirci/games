@@ -64,6 +64,7 @@ BEGIN_EVENT_TABLE(EightNumberMainFrame, wxFrame)
     EVT_MENU(wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_NUM_MISPLACED_TILES, EightNumberMainFrame::OnSolvePuzzle)
     EVT_MENU(wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_MANHATTAN_DISTANCE, EightNumberMainFrame::OnSolvePuzzle)
     EVT_MENU(wxID_MENU_FILE_SOLVE_WITH_STATE_SPACE_GRAPH, EightNumberMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_UNIFORM_COST_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
     EVT_MENU(wxID_MENU_HELP_ABOUT, EightNumberMainFrame::OnAbout)
     EVT_MENU(wxID_MENU_FILE_GAME_MODE_STANDARD, EightNumberMainFrame::OnGameModeChange)
     EVT_MENU(wxID_MENU_FILE_GAME_MODE_WEIGHTED, EightNumberMainFrame::OnGameModeChange)
@@ -141,6 +142,17 @@ EightNumberMainFrame::EightNumberMainFrame(
     m_statusBar = this->CreateStatusBar(1, wxST_SIZEGRIP|wxSUNKEN_BORDER, wxID_ANY);
     m_statusBar->SetMinHeight(25);
     UpdateStatusBarText();
+
+    // DebugConfiguration();
+}
+
+void EightNumberMainFrame::DebugConfiguration()
+{
+    m_standard_mode = false;
+    m_initial_board = std::array<uint8_t,9>{5,1,8,4,3,7,2,6,0};
+    m_logic->SetBoard(m_initial_board);
+
+    SetButtonBitmaps(m_initial_board);
 }
 
 void EightNumberMainFrame::DisplayHeader()
@@ -224,6 +236,8 @@ void EightNumberMainFrame::CreateMenu()
     uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_SEPARATOR, "","", wxITEM_SEPARATOR));
     uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_TREE_SEARCH, "Iterative Deepening - Tree Search", "Iterative Deepening Search - Tree Search", wxITEM_NORMAL));
     uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_GRAPH_SEARCH, "Iterative Deepening - Graph Search", "Iterative Deepening Search - Graph Search", wxITEM_NORMAL));
+    uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_SEPARATOR, "","", wxITEM_SEPARATOR));
+    uninformedSearchMenu->Append(new wxMenuItem(uninformedSearchMenu, wxID_MENU_FILE_SOLVE_UNIFORM_COST_SEARCH, "Uniform Cost Search - Graph Search", "Uniform Cost Search - Graph Search", wxITEM_NORMAL));
     solveMenu->AppendSubMenu(uninformedSearchMenu, "Uninformed Search");
 
     informedSearchMenu->Append(new wxMenuItem(informedSearchMenu, wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_NUM_MISPLACED_TILES, "Greedy Search with Number of Misplaced Tiles Heuristic", "Greedy Search with Number of Correct Tiles Heuristic", wxITEM_NORMAL));
@@ -404,6 +418,15 @@ void EightNumberMainFrame::OnSolvePuzzle(wxCommandEvent& event)
             solved = m_ssg->GetPathToGoalState(Utility::GetBoardAsUint(m_logic->GetBoard()), moves, m_standard_mode);
         }
         break;
+    case wxID_MENU_FILE_SOLVE_UNIFORM_COST_SEARCH:
+        if(m_standard_mode)
+        {
+            AddText("Please use Breadth First Search for standard 8-puzzle");
+            return;
+        }
+        AddText("Solver: Uniform Cost Search - Graph Search");
+        solved = m_logic->SolveUniformCostSearch(moves);
+        break;
     }
 
     std::stringstream ss;
@@ -428,7 +451,7 @@ void EightNumberMainFrame::OnSolvePuzzle(wxCommandEvent& event)
     }
     AddText(ss.str());
 
-    if(m_simulate->IsChecked())
+    if(m_simulate->IsChecked() && solved)
     {
         AddText("Simulating the solution.");
         int simPauseTime{0};

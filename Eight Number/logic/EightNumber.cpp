@@ -108,15 +108,10 @@ bool EightNumber::SolveBFS_TreeSearch(Moves& moves) const
     int depthLimit{16};
 
     std::queue<BoardAndMoves> nodes;
-    nodes.push(BoardAndMoves(m_board, Moves()));
+    nodes.emplace(BoardAndMoves(m_board, Moves()));
     while(!nodes.empty())
     {
-        BoardAndMoves& currentNode = nodes.front();
-        if(currentNode.second.size() > depthLimit)
-        {
-            break;
-        }
-
+        BoardAndMoves currentNode = nodes.front();
         if(Utility::IsSolved(currentNode.first))
         {
             std::copy(currentNode.second.begin(), currentNode.second.end(), std::back_inserter(moves));
@@ -124,27 +119,19 @@ bool EightNumber::SolveBFS_TreeSearch(Moves& moves) const
             break;
         }
 
-        auto emptyPos = Utility::GetPosition(currentNode.first, 0);
-        for(size_t i = 0; i < 9; i++)
+        if(currentNode.second.size() > depthLimit)
         {
-            if(TileGraph[emptyPos][i] == 0)
-            {
-                continue;
-            }
-
-            // update the current board
-            currentNode.first[emptyPos] = currentNode.first[i];
-            currentNode.first[i] = 0;
-            currentNode.second.push_back(currentNode.first[emptyPos]);
-
-            // add new board to the queue
-            nodes.push(currentNode);
-
-            // restore the current board
-            currentNode.first[i] = currentNode.first[emptyPos];
-            currentNode.first[emptyPos] = 0;
-            currentNode.second.pop_back();
+            break;
         }
+
+        auto nextBoards = Utility::SuccessorBoards(currentNode.first);
+        for(auto it = nextBoards.begin(); it != nextBoards.end(); it++)
+        {
+            BoardAndMoves nd(it->first, currentNode.second);
+            nd.second.push_back(it->second);
+            nodes.emplace(nd);
+        }
+
         num_expanded_nodes++;
         nodes.pop();
     }
@@ -162,11 +149,11 @@ bool EightNumber::SolveBFS_GraphSearch(Moves& moves) const
 
     std::queue<BoardAndMoves> nodes;
     nodes.emplace(BoardAndMoves(m_board, Moves()));
-    HashSet hashSet{Utility::GetBoardAsUint(m_board)};
+    HashSet hashSet;
 
     while(!nodes.empty())
     {
-        BoardAndMoves& currentNode = nodes.front();
+        BoardAndMoves currentNode = nodes.front();
         if(Utility::IsSolved(currentNode.first))
         {
             std::copy(currentNode.second.begin(), currentNode.second.end(), std::back_inserter(moves));
@@ -174,34 +161,18 @@ bool EightNumber::SolveBFS_GraphSearch(Moves& moves) const
             break;
         }
 
-        auto emptyPos = Utility::GetPosition(currentNode.first, 0);
-        for(auto i = 0; i < 9; i++)
+        auto nextBoards = Utility::SuccessorBoards(currentNode.first);
+        for(auto it = nextBoards.begin(); it != nextBoards.end(); it++)
         {
-            if(TileGraph[emptyPos][i] == 0)
+            if(hashSet.find(Utility::GetBoardAsUint(it->first)) == hashSet.end())
             {
-                continue;
+                BoardAndMoves nd(it->first, currentNode.second);
+                nd.second.push_back(it->second);
+                nodes.emplace(nd);
             }
-
-            // update the board of the current node
-            currentNode.first[emptyPos] = currentNode.first[i];
-            currentNode.first[i] = 0;
-
-            // if the current node has not been processed/explored/visited/expanded before
-            if(hashSet.insert(Utility::GetBoardAsUint(currentNode.first)).second)
-            {
-                // update the move of the current board and push it to the queue
-                currentNode.second.push_back(currentNode.first[emptyPos]);
-                nodes.push(currentNode);
-
-                // take back the move
-                currentNode.second.pop_back();
-            }
-
-            // restore the board
-            currentNode.first[i] = currentNode.first[emptyPos];
-            currentNode.first[emptyPos] = 0;
         }
 
+        hashSet.insert(Utility::GetBoardAsUint(currentNode.first));
         nodes.pop();
         num_expanded_nodes++;
     }
@@ -215,8 +186,8 @@ bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
 {
     bool solved = false;
     long num_expanded_nodes{0};
+
     std::stack<BoardAndMoves> nodes;
-    BoardAndMoves currentNode;
     HashSet hashSet;
 
     nodes.push(BoardAndMoves(m_board, Moves()));
@@ -231,37 +202,22 @@ bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
             break;
         }
 
-        currentNode = nodes.top();
+        BoardAndMoves currentNode = nodes.top();
         nodes.pop();
-        num_expanded_nodes++;
 
-        auto emptyPos = Utility::GetPosition(currentNode.first, 0);
-        for(auto i = 0; i < 9; i++)
+        auto nextBoards = Utility::SuccessorBoards(currentNode.first);
+        for(auto it = nextBoards.begin(); it != nextBoards.end(); it++)
         {
-            if(TileGraph[emptyPos][i] == 0)
+            if(hashSet.find(Utility::GetBoardAsUint(it->first)) == hashSet.end())
             {
-                continue;
+                BoardAndMoves nd(it->first, currentNode.second);
+                nd.second.push_back(it->second);
+                nodes.emplace(nd);
             }
-
-            // update the board of the current node
-            currentNode.first[emptyPos] = currentNode.first[i];
-            currentNode.first[i] = 0;
-
-            // if the current node has not been explored/visited/processed before
-            if(hashSet.insert(Utility::GetBoardAsUint(currentNode.first)).second)
-            {
-                // update the move of the current board and push it to the stack
-                currentNode.second.push_back(currentNode.first[emptyPos]);
-                nodes.push(currentNode);
-
-                // take back the move
-                currentNode.second.pop_back();
-            }
-
-            // restore the board
-            currentNode.first[i] = currentNode.first[emptyPos];
-            currentNode.first[emptyPos] = 0;
         }
+
+        num_expanded_nodes++;
+        hashSet.insert(Utility::GetBoardAsUint(currentNode.first));
     }
 
     std::cout << "SolveNonRecursiveDFS: number of expanded nodes is " << num_expanded_nodes << std::endl;
@@ -312,6 +268,47 @@ bool EightNumber::SolveIterativeDeepening(Moves& moves, bool withHash) const
     }
 
     return false;
+}
+
+bool EightNumber::SolveUniformCostSearch(Moves& moves) const
+{
+    bool solved{false};
+    long num_expanded_nodes{0};
+    auto cmp = [](UCSNode left, UCSNode right) { return left.cost > right.cost; };
+    std::priority_queue<UCSNode, std::vector<UCSNode>, decltype(cmp)> nodes(cmp);
+    nodes.emplace(UCSNode(m_board, 0, {}));
+    HashSet hashSet;
+
+    while(!nodes.empty())
+    {
+        UCSNode currentNode = nodes.top();
+        if(Utility::IsSolved(currentNode.board))
+        {
+            // update moves
+            std::copy(currentNode.moves.begin(), currentNode.moves.end(), std::back_inserter(moves));
+            solved = true;
+            break;
+        }
+
+        auto nextBoards = Utility::SuccessorBoards(currentNode.board);
+        for(auto it = nextBoards.begin(); it != nextBoards.end(); it++)
+        {
+            if(hashSet.find(Utility::GetBoardAsUint(it->first)) == hashSet.end())
+            {
+                UCSNode nd(it->first, currentNode.cost + it->second, currentNode.moves);
+                nd.moves.push_back(it->second);
+                nodes.emplace(nd);
+            }
+        }
+
+        hashSet.insert(Utility::GetBoardAsUint(currentNode.board));
+        nodes.pop();
+        num_expanded_nodes++;
+    }
+
+    std::cout << "SolveUniformCostSearch: number of expanded nodes is " << num_expanded_nodes << std::endl;
+    std::cout << "SolveUniformCostSearch: number of nodes remained in the queue is " << nodes.size() << std::endl;
+    return solved;
 }
 
 bool EightNumber::DepthLimitedRecursiveDFS_TreeSearch(Board& board, Moves& moves, int depth) const
