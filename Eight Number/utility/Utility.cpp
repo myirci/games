@@ -134,9 +134,9 @@ std::vector<std::pair<Board, uint8_t>> SuccessorBoards(const Board& board)
     return next_boards;
 }
 
-int GetNumberOfMisplacedTiles(const Board& board)
+unsigned int GetNumberOfMisplacedTiles(const Board& board)
 {
-    int numMisplaced{0};
+    unsigned int numMisplaced{0};
     for(int i = 0; i < 8; i++)
     {
         if(board[i] != i+1)
@@ -147,9 +147,9 @@ int GetNumberOfMisplacedTiles(const Board& board)
     return numMisplaced;
 }
 
-int GetSumOfManhattanDistances(const Board& board)
+unsigned int GetSumOfManhattanDistances(const Board& board)
 {
-    int sum{0};
+    unsigned int sum{0};
     for(int i = 0; i < 9; i++)
     {
         if(board[i] == 0)

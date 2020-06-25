@@ -15,16 +15,13 @@
 #include <unordered_set>
 #include <unordered_map>
 
-struct UCSNode
+struct CNode
 {
-    UCSNode(const std::array<uint8_t, 9>& b,
-            unsigned int c,
-            const std::vector<uint8_t>& mv) :
-        board{b}, cost{c}, moves{mv}
-    { }
+    CNode(const std::array<uint8_t, 9>& b, unsigned int c, const std::vector<uint8_t>& mv) :
+        board{b}, cost{c}, moves{mv} { }
 
-    std::array<uint8_t, 9> board;
     unsigned int cost;
+    std::array<uint8_t, 9> board;
     std::vector<uint8_t> moves;
 };
 
@@ -55,10 +52,10 @@ public:
     // solvers
     bool SolveBFS(Moves& moves, bool graphSearch) const;
     bool SolveNonRecursiveDFS(Moves& moves) const;
-    bool SolveDepthLimitedRecursiveDFS(Moves& moves, bool withHash) const;
-    bool SolveIterativeDeepening(Moves& moves, bool withHash) const;
-    bool SolveAStar(Moves& moves) const;
-    bool SolveGreedySearch(Moves& moves) const;
+    bool SolveDepthLimitedRecursiveDFS(Moves& moves, bool graphSearch) const;
+    bool SolveIterativeDeepening(Moves& moves, bool graphSearch) const;
+    bool SolveAStar(Moves& moves, int heuristic, bool stdMode) const;
+    bool SolveGreedySearch(Moves& moves, int heuristic) const;
     bool SolveUniformCostSearch(Moves& moves) const;
 private:
     bool SolveBFS_TreeSearch(Moves& moves) const;

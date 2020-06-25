@@ -29,6 +29,6 @@ namespace Utility
     std::vector<std::pair<Board, uint8_t>> SuccessorBoards(const Board& board);
     uint8_t Inversion(const Board& board);
 
-    int GetNumberOfMisplacedTiles(const Board& board);
-    int GetSumOfManhattanDistances(const Board& board);
+    unsigned int GetNumberOfMisplacedTiles(const Board& board);
+    unsigned int GetSumOfManhattanDistances(const Board& board);
 }

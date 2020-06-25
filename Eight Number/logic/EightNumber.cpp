@@ -226,11 +226,11 @@ bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
     return solved;
 }
 
-bool EightNumber::SolveDepthLimitedRecursiveDFS(Moves& moves, bool withHash) const
+bool EightNumber::SolveDepthLimitedRecursiveDFS(Moves& moves, bool graphSearch) const
 {
     int depthLimit{31};
     auto board = m_board;
-    if(withHash)
+    if(graphSearch)
     {
         HashMap hashMap;
         return DepthLimitedRecursiveDFS_GraphSearch(board, hashMap, moves, depthLimit);
@@ -239,7 +239,7 @@ bool EightNumber::SolveDepthLimitedRecursiveDFS(Moves& moves, bool withHash) con
     return DepthLimitedRecursiveDFS_TreeSearch(board, moves, depthLimit);
 }
 
-bool EightNumber::SolveIterativeDeepening(Moves& moves, bool withHash) const
+bool EightNumber::SolveIterativeDeepening(Moves& moves, bool graphSearch) const
 {
     int maxDepth = 31;
     int depth = 1;
@@ -247,7 +247,7 @@ bool EightNumber::SolveIterativeDeepening(Moves& moves, bool withHash) const
 
     while(depth <= maxDepth)
     {
-        if(withHash)
+        if(graphSearch)
         {
             HashMap hashMap;
             auto ret = DepthLimitedRecursiveDFS_GraphSearch(board, hashMap, moves, depth);
@@ -274,14 +274,15 @@ bool EightNumber::SolveUniformCostSearch(Moves& moves) const
 {
     bool solved{false};
     long num_expanded_nodes{0};
-    auto cmp = [](UCSNode left, UCSNode right) { return left.cost > right.cost; };
-    std::priority_queue<UCSNode, std::vector<UCSNode>, decltype(cmp)> nodes(cmp);
-    nodes.emplace(UCSNode(m_board, 0, {}));
+    auto cmp = [](CNode left, CNode right) { return left.cost > right.cost; };
+    std::priority_queue<CNode, std::vector<CNode>, decltype(cmp)> nodes(cmp);
+    nodes.emplace(CNode(m_board, 0, {}));
     HashSet hashSet;
 
     while(!nodes.empty())
     {
-        UCSNode currentNode = nodes.top();
+        CNode currentNode = nodes.top();
+        nodes.pop();
         if(Utility::IsSolved(currentNode.board))
         {
             // update moves
@@ -295,14 +296,13 @@ bool EightNumber::SolveUniformCostSearch(Moves& moves) const
         {
             if(hashSet.find(Utility::GetBoardAsUint(it->first)) == hashSet.end())
             {
-                UCSNode nd(it->first, currentNode.cost + it->second, currentNode.moves);
+                CNode nd(it->first, currentNode.cost + it->second, currentNode.moves);
                 nd.moves.push_back(it->second);
                 nodes.emplace(nd);
             }
         }
 
         hashSet.insert(Utility::GetBoardAsUint(currentNode.board));
-        nodes.pop();
         num_expanded_nodes++;
     }
 
@@ -406,12 +406,99 @@ bool EightNumber::DepthLimitedRecursiveDFS_GraphSearch(Board& board, HashMap& ha
     return false;
 }
 
-bool EightNumber::SolveGreedySearch(Moves& moves) const
+bool EightNumber::SolveGreedySearch(Moves& moves, int heuristic) const
 {
-    return false;
+    unsigned int (*g)(const Board& board);
+    g = heuristic == 1
+            ? Utility::GetNumberOfMisplacedTiles
+            : Utility::GetSumOfManhattanDistances;
+
+    bool solved{false};
+    long num_expanded_nodes{0};
+    auto cmp = [](CNode left, CNode right) { return left.cost > right.cost; };
+    std::priority_queue<CNode, std::vector<CNode>, decltype(cmp)> nodes(cmp);
+    nodes.emplace(CNode(m_board, g(m_board), {}));
+    HashSet hashSet;
+
+    while(!nodes.empty())
+    {
+        CNode currentNode = nodes.top();
+        nodes.pop();
+
+        if(Utility::IsSolved(currentNode.board))
+        {
+            // update moves
+            std::copy(currentNode.moves.begin(), currentNode.moves.end(), std::back_inserter(moves));
+            solved = true;
+            break;
+        }
+
+        auto nextBoards = Utility::SuccessorBoards(currentNode.board);
+        for(auto it = nextBoards.begin(); it != nextBoards.end(); it++)
+        {
+            if(hashSet.find(Utility::GetBoardAsUint(it->first)) == hashSet.end())
+            {
+                CNode nd(it->first, g(it->first), currentNode.moves);
+                nd.moves.push_back(it->second);
+                nodes.emplace(nd);
+            }
+        }
+
+        hashSet.insert(Utility::GetBoardAsUint(currentNode.board));
+        num_expanded_nodes++;
+    }
+
+    std::cout << "SolveGreedySearch: number of expanded nodes is " << num_expanded_nodes << std::endl;
+    std::cout << "SolveGreedySearch: number of nodes remained in the queue is " << nodes.size() << std::endl;
+    return solved;
 }
 
-bool EightNumber::SolveAStar(Moves& moves) const
+bool EightNumber::SolveAStar(Moves& moves, int heuristic, bool stdMode) const
 {
-    return false;
+    unsigned int (*h)(const Board& board);
+    h = heuristic == 1
+            ? Utility::GetNumberOfMisplacedTiles
+            : Utility::GetSumOfManhattanDistances;
+
+    bool solved{false};
+    long num_expanded_nodes{0};
+    auto cmp = [](CNode left, CNode right) { return left.cost > right.cost; };
+    std::priority_queue<CNode, std::vector<CNode>, decltype(cmp)> nodes(cmp);
+    nodes.emplace(CNode(m_board, h(m_board), {}));
+    HashSet hashSet;
+
+    while(!nodes.empty())
+    {
+        CNode currentNode = nodes.top();
+        nodes.pop();
+
+        if(Utility::IsSolved(currentNode.board))
+        {
+            // update moves
+            std::copy(currentNode.moves.begin(), currentNode.moves.end(), std::back_inserter(moves));
+            solved = true;
+            break;
+        }
+
+        auto nextBoards = Utility::SuccessorBoards(currentNode.board);
+        for(auto it = nextBoards.begin(); it != nextBoards.end(); it++)
+        {
+            if(hashSet.find(Utility::GetBoardAsUint(it->first)) == hashSet.end())
+            {
+                auto cost = currentNode.cost + h(it->first);
+                cost = stdMode ? (cost+1) : (cost + it->second);
+                CNode nd(it->first, cost, currentNode.moves);
+                nd.moves.push_back(it->second);
+                nodes.emplace(nd);
+            }
+        }
+
+        hashSet.insert(Utility::GetBoardAsUint(currentNode.board));
+        num_expanded_nodes++;
+    }
+
+    std::cout << "AStar_GraphSearch: number of expanded nodes is " << num_expanded_nodes << std::endl;
+    std::cout << "AStar_GraphSearch: number of nodes remained in the queue is " << nodes.size() << std::endl;
+
+    return solved;
 }

@@ -59,8 +59,8 @@ BEGIN_EVENT_TABLE(EightNumberMainFrame, wxFrame)
     EVT_MENU(wxID_MENU_FILE_SOLVE_DEPTH_LIMITED_RECURSIVE_DFS_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
     EVT_MENU(wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_TREE_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
     EVT_MENU(wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_NUM_MISPLACED_TILES, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_MANHATTAN_DISTANCE, EightNumberMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_NUM_MISPLACED_TILES_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_MANHATTAN_DISTANCE_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
     EVT_MENU(wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_NUM_MISPLACED_TILES, EightNumberMainFrame::OnSolvePuzzle)
     EVT_MENU(wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_MANHATTAN_DISTANCE, EightNumberMainFrame::OnSolvePuzzle)
     EVT_MENU(wxID_MENU_FILE_SOLVE_WITH_STATE_SPACE_GRAPH, EightNumberMainFrame::OnSolvePuzzle)
@@ -212,7 +212,6 @@ void EightNumberMainFrame::CreateMenu()
     menuGameMode->Append(new wxMenuItem(menuGameMode, wxID_MENU_FILE_GAME_MODE_WEIGHTED, "Weighted 8-Puzzle", "Game mode, weighted eitht puzzle", wxITEM_RADIO));
     menuFile->AppendSubMenu(menuGameMode, "Game Mode");
 
-
     wxMenu* stateSpaceGraphMenu = new wxMenu();
     stateSpaceGraphMenu->Append(new wxMenuItem(stateSpaceGraphMenu, wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_STANDARD, "Compute Standard 8-puzzle State Graph", "Compute standard 8-puzzle state space graph", wxITEM_NORMAL));
     stateSpaceGraphMenu->Append(new wxMenuItem(stateSpaceGraphMenu, wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_WEIGHTED, "Compute Weighted 8-puzzle State Graph", "Compute state space graph for weighted 8-puzzle", wxITEM_NORMAL));
@@ -242,8 +241,9 @@ void EightNumberMainFrame::CreateMenu()
 
     informedSearchMenu->Append(new wxMenuItem(informedSearchMenu, wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_NUM_MISPLACED_TILES, "Greedy Search with Number of Misplaced Tiles Heuristic", "Greedy Search with Number of Correct Tiles Heuristic", wxITEM_NORMAL));
     informedSearchMenu->Append(new wxMenuItem(informedSearchMenu, wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_MANHATTAN_DISTANCE, "Greedy Search with Manhattan Distance Heuristic", "Greedy Search with Manhattan Distance Heuristic", wxITEM_NORMAL));
-    informedSearchMenu->Append(new wxMenuItem(informedSearchMenu, wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_NUM_MISPLACED_TILES, "A Star Search with Number of Misplaced Tiles Heuristic", "A Star Search with Number of Correct Tiles Heuristic", wxITEM_NORMAL));
-    informedSearchMenu->Append(new wxMenuItem(informedSearchMenu, wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_MANHATTAN_DISTANCE, "A Star Search with Manhattan Distance Heuristic", "A Star Search with Manhattan Distance Heuristic", wxITEM_NORMAL));
+    informedSearchMenu->Append(new wxMenuItem(informedSearchMenu, wxID_SEPARATOR, "","", wxITEM_SEPARATOR));
+    informedSearchMenu->Append(new wxMenuItem(informedSearchMenu, wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_NUM_MISPLACED_TILES_GRAPH_SEARCH, "A Star Search with Number of Misplaced Tiles Heuristic - Graph Search", "A Star Search with Number of Correct Tiles Heuristic - Graph Search", wxITEM_NORMAL));
+    informedSearchMenu->Append(new wxMenuItem(informedSearchMenu, wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_MANHATTAN_DISTANCE_GRAPH_SEARCH, "A Star Search with Manhattan Distance Heuristic - Graph Search", "A Star Search with Manhattan Distance Heuristic - Graph Search", wxITEM_NORMAL));
     solveMenu->AppendSubMenu(informedSearchMenu, "Informed Search");
 
     solveMenu->Append(new wxMenuItem(solveMenu, wxID_MENU_FILE_SOLVE_WITH_STATE_SPACE_GRAPH, "Solve with State Space Graph", "Use State Space Graph to Solve the Puzzle", wxITEM_NORMAL));
@@ -397,19 +397,19 @@ void EightNumberMainFrame::OnSolvePuzzle(wxCommandEvent& event)
         break;
     case wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_NUM_MISPLACED_TILES:
         AddText("Solver: Greedy Search with Number of Correct Tiles Heuristic");
-        // solved = m_logic->SolveAStar(moves);
+        solved = m_logic->SolveGreedySearch(moves,1);
         break;
     case wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_MANHATTAN_DISTANCE:
         AddText("Solver: Greedy Search with Manhattan Distance Heuristic");
-        // solved = m_logic->SolveAStar(moves);
+        solved = m_logic->SolveGreedySearch(moves,2);
         break;
-    case wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_NUM_MISPLACED_TILES:
-        AddText("Solver: A Star Search with Number of Correct Tiles Heuristic");
-        // solved = m_logic->SolveAStar(moves);
+    case wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_NUM_MISPLACED_TILES_GRAPH_SEARCH:
+        AddText("Solver: A Star Search with Number of Misplaced Tiles Heuristic - Graph Search");
+        solved = m_logic->SolveAStar(moves, 1, m_standard_mode);
         break;
-    case wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_MANHATTAN_DISTANCE:
-        AddText("Solver: A Star Search with Manhattan Distance Heuristic");
-        // solved = m_logic->SolveAStar(moves);
+    case wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_MANHATTAN_DISTANCE_GRAPH_SEARCH:
+        AddText("Solver: A Star Search with Manhattan Distance Heuristic - Graph Search");
+        solved = m_logic->SolveAStar(moves, 2, m_standard_mode);
         break;
     case wxID_MENU_FILE_SOLVE_WITH_STATE_SPACE_GRAPH:
         if(CheckStateSpaceGraph(m_standard_mode))

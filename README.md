@@ -35,6 +35,7 @@ This repository contains three sepearate projects:
 				- unordered_set based hashing stores only the board states.
 				- unordered_map based hashing stores the board states as key and the depth of the board (from the starting position) as value. 
 				- Keeping the depth of a state makes a difference for some of the algorithms. A node is discarded only if it is visited/expanded before in a lower depth, otherwise it is explored again so that we might find a better solution if the node is a part of the solution.    				
+				
 	- Uninformed search algorithms: 
 		- BFS (Breadth First Seach): 
 			- BFS is guaranteed to give a solution with minimum number of moves. Since the cost of each move is equal in the standard 8-puzzle problem, BFS also computes the optimal solution. If the cost of successor states were not equal, BFS would still give the path to the goal state with minimum number of moves but it would not necessarily be the cheapest in terms of cost. The uninformed search algorithm for getting the path with minimum cost is Uniform Cost Search algorithm. 
@@ -49,25 +50,25 @@ This repository contains three sepearate projects:
 			- Two versions of the algorithm one for tree search and one for graph search.
 			- unordered_map is used for hashing for the graph search version of the algorithm.
 			- Depth limit is set to 31 for both algorithms, both are complete and optimal.			
-		-Uniform Cost Search:
+		-Uniform Cost Search (Cheapest First Search):
 			- Orders the nodes to be expanded by path cost or backward cost (g(n))
 			- Complete and optimal.
 			
 	- Informed (heuristic) search: 
-		- Greedy Search Algorithm:
+		- Greedy Search (Best First Search):
 			- Orders the nodes to be expanded by heuristic (estimated proximity to the goal state, forward cost h(n))
 			- Implemeted with two different heuristics: number of misplaced tiles, Manhattan distance.
 			- Complete but not optimal.
-		- A* algorithm
+		- A* Search
 			- Orders the nodes based on the sum of backward and forward costs (f(n) = g(n) + h(n)).
 			- Implemeted with two different heuristics: number of misplaced tiles, Manhattan distance.
-			- Tree search version: optimal if the heuristic used is admissable (optimistic, heuristic at a node is not bigger than actual cost).
-			- Graph search version: optimal if the heuristic used is consistent (consistency implies admissibility).
+			- Tree search version: optimal if the heuristic used is admissable. This is not implemented as it takes a lot of time to compute, similar to BFS_Tree Search case. 
+			- Graph search version: optimal if the heuristic used is consistent (consistency implies admissibility: heuristic at a node is not bigger than actual cost).
 			
 	- State Space Graph:
-		- Full state space graph can also be computed and exported
-		- This graph can be used to find optimal solutions
-		- See the data folder for the exported graphs in csv format  
+		- Full state space graph can also be computed and exported.
+		- This graph can be used to find optimal solutions.
+		- See the data folder for the exported graphs in csv format.  
 		- State space graph for standard 8-puzzle is computed by a variant of BFS algorithm starting from the goal state.
 		- State space graph for the weighted 8-puzzle is computed by Dijkstra's single source shortes path algorithm starting from the goal state.
 
