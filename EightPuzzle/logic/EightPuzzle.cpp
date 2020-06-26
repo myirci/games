@@ -7,7 +7,7 @@
  *
 */
 
-#include "EightNumber.hpp"
+#include "EightPuzzle.hpp"
 #include "../utility/Utility.hpp"
 
 #include <iostream>
@@ -19,7 +19,7 @@
 #include <utility>
 
 // construct the connectivity graph
-const std::array<std::array<unsigned char, 9>,9> EightNumber::TileGraph =
+const std::array<std::array<unsigned char, 9>,9> EightPuzzle::TileGraph =
 {{
      {0,1,0,1,0,0,0,0,0}, // 0
      {1,0,1,0,1,0,0,0,0}, // 1
@@ -32,42 +32,42 @@ const std::array<std::array<unsigned char, 9>,9> EightNumber::TileGraph =
      {0,0,0,0,0,1,0,1,0}  // 8
  }};
 
-EightNumber::EightNumber(Board&& b)
+EightPuzzle::EightPuzzle(Board&& b)
 {
     m_board = std::move(b);
 }
 
-EightNumber::EightNumber(const Board& b)
+EightPuzzle::EightPuzzle(const Board& b)
 {
     std::copy(b.begin(), b.end(), m_board.begin());
 }
 
-void EightNumber::SetBoard(Board&& b)
+void EightPuzzle::SetBoard(Board&& b)
 {
     m_board = std::move(b);
 }
 
-void EightNumber::SetBoard(const Board& b)
+void EightPuzzle::SetBoard(const Board& b)
 {
     std::copy(b.begin(), b.end(), m_board.begin());
 }
 
-size_t EightNumber::GetPosition(uint8_t val) const
+size_t EightPuzzle::GetPosition(uint8_t val) const
 {
     return Utility::GetPosition(m_board, val);
 }
 
-const EightNumber::Board& EightNumber::GetBoard() const
+const EightPuzzle::Board& EightPuzzle::GetBoard() const
 {
     return m_board;
 }
 
-uint8_t EightNumber::GetVal(size_t pos) const
+uint8_t EightPuzzle::GetVal(size_t pos) const
 {
     return m_board[pos];
 }
 
-bool EightNumber::UpdateBoard(size_t pos)
+bool EightPuzzle::UpdateBoard(size_t pos)
 {
     for(auto i = 0; i < 9; i++)
     {
@@ -84,7 +84,7 @@ bool EightNumber::UpdateBoard(size_t pos)
     return false;
 }
 
-void EightNumber::Shuffle()
+void EightPuzzle::Shuffle()
 {
     auto seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
@@ -94,14 +94,14 @@ void EightNumber::Shuffle()
     } while(!Utility::IsSolvable(m_board));
 }
 
-bool EightNumber::SolveBFS(Moves& moves, bool graphSearch) const
+bool EightPuzzle::SolveBFS(Moves& moves, bool graphSearch) const
 {
     return graphSearch
             ? SolveBFS_GraphSearch(moves)
             : SolveBFS_TreeSearch(moves);
 }
 
-bool EightNumber::SolveBFS_TreeSearch(Moves& moves) const
+bool EightPuzzle::SolveBFS_TreeSearch(Moves& moves) const
 {
     bool solved{false};
     long num_expanded_nodes{0};
@@ -142,7 +142,7 @@ bool EightNumber::SolveBFS_TreeSearch(Moves& moves) const
     return solved;
 }
 
-bool EightNumber::SolveBFS_GraphSearch(Moves& moves) const
+bool EightPuzzle::SolveBFS_GraphSearch(Moves& moves) const
 {
     bool solved{false};
     long num_expanded_nodes{0};
@@ -182,7 +182,7 @@ bool EightNumber::SolveBFS_GraphSearch(Moves& moves) const
     return solved;
 }
 
-bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
+bool EightPuzzle::SolveNonRecursiveDFS(Moves& moves) const
 {
     bool solved = false;
     long num_expanded_nodes{0};
@@ -226,7 +226,7 @@ bool EightNumber::SolveNonRecursiveDFS(Moves& moves) const
     return solved;
 }
 
-bool EightNumber::SolveDepthLimitedRecursiveDFS(Moves& moves, bool graphSearch) const
+bool EightPuzzle::SolveDepthLimitedRecursiveDFS(Moves& moves, bool graphSearch) const
 {
     int depthLimit{31};
     auto board = m_board;
@@ -239,7 +239,7 @@ bool EightNumber::SolveDepthLimitedRecursiveDFS(Moves& moves, bool graphSearch) 
     return DepthLimitedRecursiveDFS_TreeSearch(board, moves, depthLimit);
 }
 
-bool EightNumber::SolveIterativeDeepening(Moves& moves, bool graphSearch) const
+bool EightPuzzle::SolveIterativeDeepening(Moves& moves, bool graphSearch) const
 {
     int maxDepth = 31;
     int depth = 1;
@@ -270,7 +270,7 @@ bool EightNumber::SolveIterativeDeepening(Moves& moves, bool graphSearch) const
     return false;
 }
 
-bool EightNumber::SolveUniformCostSearch(Moves& moves) const
+bool EightPuzzle::SolveUniformCostSearch(Moves& moves) const
 {
     bool solved{false};
     long num_expanded_nodes{0};
@@ -311,7 +311,7 @@ bool EightNumber::SolveUniformCostSearch(Moves& moves) const
     return solved;
 }
 
-bool EightNumber::DepthLimitedRecursiveDFS_TreeSearch(Board& board, Moves& moves, int depth) const
+bool EightPuzzle::DepthLimitedRecursiveDFS_TreeSearch(Board& board, Moves& moves, int depth) const
 {
     if(Utility::IsSolved(board))
     {
@@ -350,7 +350,7 @@ bool EightNumber::DepthLimitedRecursiveDFS_TreeSearch(Board& board, Moves& moves
     return false;
 }
 
-bool EightNumber::DepthLimitedRecursiveDFS_GraphSearch(Board& board, HashMap& hashMap, Moves& moves, int depth) const
+bool EightPuzzle::DepthLimitedRecursiveDFS_GraphSearch(Board& board, HashMap& hashMap, Moves& moves, int depth) const
 {
     if(Utility::IsSolved(board))
     {
@@ -406,7 +406,7 @@ bool EightNumber::DepthLimitedRecursiveDFS_GraphSearch(Board& board, HashMap& ha
     return false;
 }
 
-bool EightNumber::SolveGreedySearch(Moves& moves, int heuristic) const
+bool EightPuzzle::SolveGreedySearch(Moves& moves, int heuristic) const
 {
     unsigned int (*g)(const Board& board);
     g = heuristic == 1
@@ -453,7 +453,7 @@ bool EightNumber::SolveGreedySearch(Moves& moves, int heuristic) const
     return solved;
 }
 
-bool EightNumber::SolveAStar(Moves& moves, int heuristic, bool stdMode) const
+bool EightPuzzle::SolveAStar(Moves& moves, int heuristic, bool stdMode) const
 {
     unsigned int (*h)(const Board& board);
     h = heuristic == 1

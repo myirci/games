@@ -12,7 +12,7 @@
 #include <queue>
 
 #include "StateSpaceGraph.hpp"
-#include "EightNumber.hpp"
+#include "EightPuzzle.hpp"
 #include "../utility/Utility.hpp"
 
 Node::Node(const std::array<uint8_t, 9>& b, int dtg, int mtg, unsigned int stg) :

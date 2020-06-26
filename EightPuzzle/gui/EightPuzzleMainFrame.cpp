@@ -13,8 +13,8 @@
 #include <thread>
 #include <numeric>
 
-#include "EightNumberMainFrame.hpp"
-#include "../logic/EightNumber.hpp"
+#include "EightPuzzleMainFrame.hpp"
+#include "../logic/EightPuzzle.hpp"
 #include "../logic/StateSpaceGraph.hpp"
 #include "../utility/Utility.hpp"
 
@@ -35,44 +35,44 @@
 #include <wx/menu.h>
 #include <wx/filedlg.h>
 
-BEGIN_EVENT_TABLE(EightNumberMainFrame, wxFrame)
-    EVT_BUTTON(wxID_BUTTON_0, EightNumberMainFrame::OnClickButton)
-    EVT_BUTTON(wxID_BUTTON_1, EightNumberMainFrame::OnClickButton)
-    EVT_BUTTON(wxID_BUTTON_2, EightNumberMainFrame::OnClickButton)
-    EVT_BUTTON(wxID_BUTTON_3, EightNumberMainFrame::OnClickButton)
-    EVT_BUTTON(wxID_BUTTON_4, EightNumberMainFrame::OnClickButton)
-    EVT_BUTTON(wxID_BUTTON_5, EightNumberMainFrame::OnClickButton)
-    EVT_BUTTON(wxID_BUTTON_6, EightNumberMainFrame::OnClickButton)
-    EVT_BUTTON(wxID_BUTTON_7, EightNumberMainFrame::OnClickButton)
-    EVT_BUTTON(wxID_BUTTON_8, EightNumberMainFrame::OnClickButton)
-    EVT_MENU(wxID_MENU_FILE_NEW, EightNumberMainFrame::OnNewPuzzle)
-    EVT_MENU(wxID_MENU_FILE_CLEAR_TEXT_AREA, EightNumberMainFrame::OnClearTextArea)
-    EVT_MENU(wxID_MENU_FILE_RESTART, EightNumberMainFrame::OnRestartCurrentPuzzle)
-    EVT_MENU(wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_STANDARD, EightNumberMainFrame::OnComputeStateSpaceGraph)
-    EVT_MENU(wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_WEIGHTED, EightNumberMainFrame::OnComputeStateSpaceGraph)
-    EVT_MENU(wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_STANDARD, EightNumberMainFrame::OnExportStateSpaceGraph)
-    EVT_MENU(wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_WEIGHTED, EightNumberMainFrame::OnExportStateSpaceGraph)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_BFS_TREE_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_BFS_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_NON_RECURSIVE_DFS_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_DEPTH_LIMITED_RECURSIVE_DFS_TREE_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_DEPTH_LIMITED_RECURSIVE_DFS_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_TREE_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_NUM_MISPLACED_TILES_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_MANHATTAN_DISTANCE_GRAPH_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_NUM_MISPLACED_TILES, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_MANHATTAN_DISTANCE, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_WITH_STATE_SPACE_GRAPH, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_FILE_SOLVE_UNIFORM_COST_SEARCH, EightNumberMainFrame::OnSolvePuzzle)
-    EVT_MENU(wxID_MENU_HELP_ABOUT, EightNumberMainFrame::OnAbout)
-    EVT_MENU(wxID_MENU_FILE_GAME_MODE_STANDARD, EightNumberMainFrame::OnGameModeChange)
-    EVT_MENU(wxID_MENU_FILE_GAME_MODE_WEIGHTED, EightNumberMainFrame::OnGameModeChange)
+BEGIN_EVENT_TABLE(EightPuzzleMainFrame, wxFrame)
+    EVT_BUTTON(wxID_BUTTON_0, EightPuzzleMainFrame::OnClickButton)
+    EVT_BUTTON(wxID_BUTTON_1, EightPuzzleMainFrame::OnClickButton)
+    EVT_BUTTON(wxID_BUTTON_2, EightPuzzleMainFrame::OnClickButton)
+    EVT_BUTTON(wxID_BUTTON_3, EightPuzzleMainFrame::OnClickButton)
+    EVT_BUTTON(wxID_BUTTON_4, EightPuzzleMainFrame::OnClickButton)
+    EVT_BUTTON(wxID_BUTTON_5, EightPuzzleMainFrame::OnClickButton)
+    EVT_BUTTON(wxID_BUTTON_6, EightPuzzleMainFrame::OnClickButton)
+    EVT_BUTTON(wxID_BUTTON_7, EightPuzzleMainFrame::OnClickButton)
+    EVT_BUTTON(wxID_BUTTON_8, EightPuzzleMainFrame::OnClickButton)
+    EVT_MENU(wxID_MENU_FILE_NEW, EightPuzzleMainFrame::OnNewPuzzle)
+    EVT_MENU(wxID_MENU_FILE_CLEAR_TEXT_AREA, EightPuzzleMainFrame::OnClearTextArea)
+    EVT_MENU(wxID_MENU_FILE_RESTART, EightPuzzleMainFrame::OnRestartCurrentPuzzle)
+    EVT_MENU(wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_STANDARD, EightPuzzleMainFrame::OnComputeStateSpaceGraph)
+    EVT_MENU(wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_WEIGHTED, EightPuzzleMainFrame::OnComputeStateSpaceGraph)
+    EVT_MENU(wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_STANDARD, EightPuzzleMainFrame::OnExportStateSpaceGraph)
+    EVT_MENU(wxID_MENU_FILE_STATE_SPACE_GRAPH_EXPORT_WEIGHTED, EightPuzzleMainFrame::OnExportStateSpaceGraph)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_BFS_TREE_SEARCH, EightPuzzleMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_BFS_GRAPH_SEARCH, EightPuzzleMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_NON_RECURSIVE_DFS_GRAPH_SEARCH, EightPuzzleMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_DEPTH_LIMITED_RECURSIVE_DFS_TREE_SEARCH, EightPuzzleMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_DEPTH_LIMITED_RECURSIVE_DFS_GRAPH_SEARCH, EightPuzzleMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_TREE_SEARCH, EightPuzzleMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_ITERATIVE_DEEPENING_GRAPH_SEARCH, EightPuzzleMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_NUM_MISPLACED_TILES_GRAPH_SEARCH, EightPuzzleMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_A_STAR_HEURISTIC_MANHATTAN_DISTANCE_GRAPH_SEARCH, EightPuzzleMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_NUM_MISPLACED_TILES, EightPuzzleMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_GREEDY_SEARCH_HEURISTIC_MANHATTAN_DISTANCE, EightPuzzleMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_WITH_STATE_SPACE_GRAPH, EightPuzzleMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_FILE_SOLVE_UNIFORM_COST_SEARCH, EightPuzzleMainFrame::OnSolvePuzzle)
+    EVT_MENU(wxID_MENU_HELP_ABOUT, EightPuzzleMainFrame::OnAbout)
+    EVT_MENU(wxID_MENU_FILE_GAME_MODE_STANDARD, EightPuzzleMainFrame::OnGameModeChange)
+    EVT_MENU(wxID_MENU_FILE_GAME_MODE_WEIGHTED, EightPuzzleMainFrame::OnGameModeChange)
 END_EVENT_TABLE()
 
-const wxRichTextAttr EightNumberMainFrame::RedText = wxRichTextAttr(wxTextAttr(wxCOLOURED));
+const wxRichTextAttr EightPuzzleMainFrame::RedText = wxRichTextAttr(wxTextAttr(wxCOLOURED));
 
-EightNumberMainFrame::EightNumberMainFrame(
+EightPuzzleMainFrame::EightPuzzleMainFrame(
         wxWindow* parent,
         wxWindowID id,
         const wxString& title,
@@ -80,7 +80,7 @@ EightNumberMainFrame::EightNumberMainFrame(
         const wxSize& size,
         long style) :
     wxFrame(parent, id, title, pos, size, style),
-    m_logic{new EightNumber({1,2,3,4,5,6,7,8,0})},
+    m_logic{new EightPuzzle({1,2,3,4,5,6,7,8,0})},
     m_ssg{std::make_unique<StateSpaceGraph>()},
     m_move_count{0},
     m_cost{0},
@@ -146,7 +146,7 @@ EightNumberMainFrame::EightNumberMainFrame(
     // DebugConfiguration();
 }
 
-void EightNumberMainFrame::DebugConfiguration()
+void EightPuzzleMainFrame::DebugConfiguration()
 {
     m_standard_mode = false;
     m_initial_board = std::array<uint8_t,9>{5,1,8,4,3,7,2,6,0};
@@ -155,24 +155,24 @@ void EightNumberMainFrame::DebugConfiguration()
     SetButtonBitmaps(m_initial_board);
 }
 
-void EightNumberMainFrame::DisplayHeader()
+void EightPuzzleMainFrame::DisplayHeader()
 {
     m_richText->BeginBold();
     m_richText->DoWriteText(wxString(Utility::GetDateAndTime()));
-    m_richText->DoWriteText(wxString("Eight Number program is started"));
+    m_richText->DoWriteText(wxString("Eight Puzzle is started"));
     m_richText->EndBold();
     m_richText->AddParagraph("----------------------------------------------------------------------------------");
     m_richText->Refresh();
 }
 
-void EightNumberMainFrame::AddText(const std::string& str)
+void EightPuzzleMainFrame::AddText(const std::string& str)
 {
     m_richText->AddParagraph(str);
     m_richText->AddParagraph("----------------------------------------------------------------------------------");
     m_richText->Refresh();
 }
 
-void EightNumberMainFrame::CreateBitmapButtons(wxGridSizer* gSizer)
+void EightPuzzleMainFrame::CreateBitmapButtons(wxGridSizer* gSizer)
 {
     unsigned int ids[9] =
     {
@@ -190,7 +190,7 @@ void EightNumberMainFrame::CreateBitmapButtons(wxGridSizer* gSizer)
     }
 }
 
-void EightNumberMainFrame::SetButtonBitmaps(const std::array<uint8_t, 9>& board)
+void EightPuzzleMainFrame::SetButtonBitmaps(const std::array<uint8_t, 9>& board)
 {
     for(size_t i = 0; i < 9; ++i)
     {
@@ -198,7 +198,7 @@ void EightNumberMainFrame::SetButtonBitmaps(const std::array<uint8_t, 9>& board)
     }
 }
 
-void EightNumberMainFrame::CreateMenu()
+void EightPuzzleMainFrame::CreateMenu()
 {
     wxMenuBar* menuBar = new wxMenuBar(0);
     wxMenu* menuFile = new wxMenu();
@@ -260,7 +260,7 @@ void EightNumberMainFrame::CreateMenu()
     this->SetMenuBar(menuBar);
 }
 
-void EightNumberMainFrame::UpdateStatusBarText()
+void EightPuzzleMainFrame::UpdateStatusBarText()
 {
     std::string str = "Move Counter: " + std::to_string(m_move_count);
     if(!m_standard_mode)
@@ -270,12 +270,12 @@ void EightNumberMainFrame::UpdateStatusBarText()
     m_statusBar->SetStatusText(str);
 }
 
-void EightNumberMainFrame::OnClickButton(wxCommandEvent& event)
+void EightPuzzleMainFrame::OnClickButton(wxCommandEvent& event)
 {
     PerformClick(static_cast<size_t>(event.GetId() - 1000));
 }
 
-void EightNumberMainFrame::OnNewPuzzle(wxCommandEvent& event)
+void EightPuzzleMainFrame::OnNewPuzzle(wxCommandEvent& event)
 {
     m_logic->Shuffle();
     SetButtonBitmaps(m_logic->GetBoard());
@@ -288,13 +288,13 @@ void EightNumberMainFrame::OnNewPuzzle(wxCommandEvent& event)
     AddText("New puzzle: distance to solution: " + std::to_string(m_solution.size()));
 }
 
-void EightNumberMainFrame::OnClearTextArea(wxCommandEvent& event)
+void EightPuzzleMainFrame::OnClearTextArea(wxCommandEvent& event)
 {
     m_richText->Clear();
     DisplayHeader();
 }
 
-void EightNumberMainFrame::OnRestartCurrentPuzzle(wxCommandEvent& event)
+void EightPuzzleMainFrame::OnRestartCurrentPuzzle(wxCommandEvent& event)
 {
     SetButtonBitmaps(m_initial_board);
     m_move_count = 0;
@@ -303,7 +303,7 @@ void EightNumberMainFrame::OnRestartCurrentPuzzle(wxCommandEvent& event)
     AddText("Current puzzle restarted: distance to solution: " + std::to_string(m_solution.size()));
 }
 
-void EightNumberMainFrame::OnComputeStateSpaceGraph(wxCommandEvent& event)
+void EightPuzzleMainFrame::OnComputeStateSpaceGraph(wxCommandEvent& event)
 {
     switch(event.GetId())
     {
@@ -318,7 +318,7 @@ void EightNumberMainFrame::OnComputeStateSpaceGraph(wxCommandEvent& event)
     }
 }
 
-void EightNumberMainFrame::OnExportStateSpaceGraph(wxCommandEvent& event)
+void EightPuzzleMainFrame::OnExportStateSpaceGraph(wxCommandEvent& event)
 {
     switch(event.GetId())
     {
@@ -355,7 +355,7 @@ void EightNumberMainFrame::OnExportStateSpaceGraph(wxCommandEvent& event)
     }
 }
 
-void EightNumberMainFrame::OnSolvePuzzle(wxCommandEvent& event)
+void EightPuzzleMainFrame::OnSolvePuzzle(wxCommandEvent& event)
 {
     if(Utility::IsSolved(m_logic->GetBoard()))
     {
@@ -483,7 +483,7 @@ void EightNumberMainFrame::OnSolvePuzzle(wxCommandEvent& event)
     }
 }
 
-void EightNumberMainFrame::OnGameModeChange(wxCommandEvent& event)
+void EightPuzzleMainFrame::OnGameModeChange(wxCommandEvent& event)
 {
     switch(event.GetId())
     {
@@ -499,13 +499,13 @@ void EightNumberMainFrame::OnGameModeChange(wxCommandEvent& event)
     UpdateStatusBarText();
 }
 
-void EightNumberMainFrame::OnAbout(wxCommandEvent& event)
+void EightPuzzleMainFrame::OnAbout(wxCommandEvent& event)
 {
     AddText("This program incorporates different search algorithms for 8-number puzzle.");
     AddText("myirci@gmail.com - Copyright 2020");
 }
 
-void EightNumberMainFrame::PerformClick(std::size_t clickedPos)
+void EightPuzzleMainFrame::PerformClick(std::size_t clickedPos)
 {
     auto emptyPos = m_logic->GetPosition(0);
     if(m_logic->UpdateBoard(clickedPos))
@@ -531,7 +531,7 @@ void EightNumberMainFrame::PerformClick(std::size_t clickedPos)
     }
 }
 
-bool EightNumberMainFrame::CheckStateSpaceGraph(bool standardPuzzle)
+bool EightPuzzleMainFrame::CheckStateSpaceGraph(bool standardPuzzle)
 {
     if(standardPuzzle)
     {

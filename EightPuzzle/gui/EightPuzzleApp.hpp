@@ -11,9 +11,9 @@
 
 #include <wx/app.h>
 
-class EightNumberApp : public wxApp {
+class EightPuzzleApp : public wxApp {
 public:
     bool OnInit();
 };
 
-DECLARE_APP(EightNumberApp)
+DECLARE_APP(EightPuzzleApp)

@@ -16,7 +16,7 @@
 #include <string>
 
 #include "Utility.hpp"
-#include "../logic/EightNumber.hpp"
+#include "../logic/EightPuzzle.hpp"
 
 namespace Utility
 {
@@ -119,7 +119,7 @@ std::vector<std::pair<Board, uint8_t>> SuccessorBoards(const Board& board)
     auto emptyPos = GetPosition(board, 0);
     for(auto i = 0; i < 9; i++)
     {
-        if(EightNumber::TileGraph[emptyPos][i] == 0)
+        if(EightPuzzle::TileGraph[emptyPos][i] == 0)
         {
             continue;
         }

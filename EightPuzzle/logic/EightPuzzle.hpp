@@ -25,7 +25,7 @@ struct CNode
     std::vector<uint8_t> moves;
 };
 
-class EightNumber
+class EightPuzzle
 {
 public:
     using Board = std::array<uint8_t, 9>;
@@ -38,8 +38,8 @@ private:
     Board m_board;
 public:
 
-    EightNumber(Board&& b);
-    EightNumber(const Board& b);
+    EightPuzzle(Board&& b);
+    EightPuzzle(const Board& b);
 
     void SetBoard(Board&& b);
     void SetBoard(const Board& b);

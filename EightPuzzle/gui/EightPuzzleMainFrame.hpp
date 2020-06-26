@@ -53,7 +53,7 @@ enum
     wxID_MENU_HELP_ABOUT
 };
 
-class EightNumber;
+class EightPuzzle;
 class StateSpaceGraph;
 class wxBitmapButton;
 class wxRichTextCtrl;
@@ -63,16 +63,16 @@ class wxRichTextAttr;
 class wxMenuItem;
 class wxStatusBar;
 
-class EightNumberMainFrame : public wxFrame
+class EightPuzzleMainFrame : public wxFrame
 {
 public:
-    EightNumberMainFrame(wxWindow* parent, wxWindowID id = wxID_ANY,
-            const wxString& title = wxT("Eight Number Puzzle"),
+    EightPuzzleMainFrame(wxWindow* parent, wxWindowID id = wxID_ANY,
+            const wxString& title = wxT("Eight Puzzle"),
             const wxPoint& pos = wxDefaultPosition,
             const wxSize& size = wxSize(740, 450),
             long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL);
 private:
-    std::unique_ptr<EightNumber> m_logic;
+    std::unique_ptr<EightPuzzle> m_logic;
     std::unique_ptr<StateSpaceGraph> m_ssg;
     wxBitmap m_bitmaps[9];
     wxBitmapButton* m_buttons[9];
