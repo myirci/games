@@ -42,8 +42,7 @@ public:
     bool IsWeightedEightPuzzleStateSpaceGraphComputed() const;
     bool GetPathToGoalState(unsigned int initialKey, std::vector<uint8_t>& moves, bool stdPuzzle) const;
     void ComputeStandardEightPuzzleStateSpaceGraph();
-    void ComputeWeightedEightPuzzleStateSpaceGraph_Dijkstra();
-    void ComputeWeightedEightPuzzleStateSpaceGraph_UniformCostSearch();
+    void ComputeWeightedEightPuzzleStateSpaceGraph();
     int ExportStandardEightPuzzleStateSpaceGraph(const std::string& fname) const;
     int ExportWeightedEightPuzzleStateSpaceGraph(const std::string& fname) const;
 };

@@ -68,12 +68,13 @@ This repository contains three sepearate projects:
 			- Implemeted with two different heuristics: number of misplaced tiles, Manhattan distance.
 			- Tree search version: optimal if the heuristic used is admissible. This is not implemented as it takes a lot of time to compute, similar to BFS_Tree Search case. 
 			- Graph search version: optimal if the heuristic used is consistent.
+			
 	- State Space Graph:
 		- Full state space graph can also be computed and exported.
 		- This graph can be used to find optimal solutions.
 		- See the data folder for the exported graphs in csv format.  
 		- State space graph for standard 8-puzzle is computed by a variant of BFS algorithm starting from the goal state.
-		- State space graph for the weighted 8-puzzle is computed by Dijkstra's single source shortes path algorithm starting from the goal state.
+		- State space graph for the weighted 8-puzzle is computed by a variant of uniform cost search (of Dijkstra's algorithm) starting from the goal state.
 
 3) Tetris: Processing, Java
 	- A modern tetris game with lock-down, hold piece and display of multiple next pieces.

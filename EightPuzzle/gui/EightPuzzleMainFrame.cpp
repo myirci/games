@@ -143,7 +143,7 @@ EightPuzzleMainFrame::EightPuzzleMainFrame(
     m_statusBar->SetMinHeight(25);
     UpdateStatusBarText();
 
-    DebugConfiguration();
+    // DebugConfiguration();
 }
 
 void EightPuzzleMainFrame::DebugConfiguration()
@@ -313,7 +313,7 @@ void EightPuzzleMainFrame::OnComputeStateSpaceGraph(wxCommandEvent& event)
         AddText("State space graph for standard 8-puzzle is computed.");
         break;
     case wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_WEIGHTED:
-        m_ssg->ComputeWeightedEightPuzzleStateSpaceGraph_UniformCostSearch();
+        m_ssg->ComputeWeightedEightPuzzleStateSpaceGraph();
         AddText("State space graph for weighted 8-puzzle is computed.");
         break;
     }
@@ -417,6 +417,10 @@ void EightPuzzleMainFrame::OnSolvePuzzle(wxCommandEvent& event)
         {
             AddText("Solver: Use State Space Graph to Solve the Puzzle");
             solved = m_ssg->GetPathToGoalState(Utility::GetBoardAsUint(m_logic->GetBoard()), moves, m_standard_mode);
+        }
+        else
+        {
+            return;
         }
         break;
     case wxID_MENU_FILE_SOLVE_UNIFORM_COST_SEARCH:

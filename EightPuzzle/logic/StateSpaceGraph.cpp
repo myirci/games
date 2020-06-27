@@ -61,7 +61,7 @@ void StateSpaceGraph::ComputeStandardEightPuzzleStateSpaceGraph()
     }
 }
 
-void StateSpaceGraph::ComputeWeightedEightPuzzleStateSpaceGraph_UniformCostSearch()
+void StateSpaceGraph::ComputeWeightedEightPuzzleStateSpaceGraph()
 {
     if(m_wnodes)
     {
@@ -106,11 +106,6 @@ void StateSpaceGraph::ComputeWeightedEightPuzzleStateSpaceGraph_UniformCostSearc
     }
 }
 
-void StateSpaceGraph::ComputeWeightedEightPuzzleStateSpaceGraph_Dijkstra()
-{
-
-}
-
 int StateSpaceGraph::ExportStandardEightPuzzleStateSpaceGraph(const std::string& fname) const
 {
     if(!m_snodes)
@@ -152,6 +147,7 @@ int StateSpaceGraph::ExportWeightedEightPuzzleStateSpaceGraph(const std::string&
             << std::endl;
     }
     ofs.close();
+    return 0;
 }
 
 bool StateSpaceGraph::IsStandardEightPuzzleStateSpaceGraphComputed() const
@@ -190,8 +186,24 @@ bool StateSpaceGraph::GetPathToGoalState(unsigned int initialKey, std::vector<ui
         }
         while(it->second.dist_to_goal != 0);
         moves.pop_back();
-        return true;
+    }
+    else
+    {
+        auto key = initialKey;
+        std::unordered_map<unsigned int, WNode>::iterator it;
+        do
+        {
+            it = m_wnodes->find(key);
+            if(it == m_wnodes->end())
+            {
+                return false;
+            }
+            moves.push_back(it->second.move_to_goal);
+            key = it->second.successor_to_goal;
+        }
+        while(it->second.cost_to_goal != 0);
+        moves.pop_back();
     }
 
-    return false;
+    return true;
 }
