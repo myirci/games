@@ -55,7 +55,7 @@ This repository contains three sepearate projects:
 			- Complete and optimal.
 			
 	- Informed (heuristic) search: 
-		- Greedy Search (Best First Search):
+		- Greedy Search:
 			- Orders the nodes to be expanded by heuristic (estimated proximity to the goal state, forward cost h(n))
 			- Implemeted with two different heuristics: number of misplaced tiles, Manhattan distance.
 				- Both heuristics are admissible and consistent

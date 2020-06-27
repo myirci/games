@@ -143,13 +143,14 @@ EightPuzzleMainFrame::EightPuzzleMainFrame(
     m_statusBar->SetMinHeight(25);
     UpdateStatusBarText();
 
-    // DebugConfiguration();
+    DebugConfiguration();
 }
 
 void EightPuzzleMainFrame::DebugConfiguration()
 {
     m_standard_mode = false;
-    m_initial_board = std::array<uint8_t,9>{5,1,8,4,3,7,2,6,0};
+    m_initial_board = std::array<uint8_t,9>{8,0,3,6,5,2,7,4,1};
+
     m_logic->SetBoard(m_initial_board);
 
     SetButtonBitmaps(m_initial_board);
@@ -312,7 +313,7 @@ void EightPuzzleMainFrame::OnComputeStateSpaceGraph(wxCommandEvent& event)
         AddText("State space graph for standard 8-puzzle is computed.");
         break;
     case wxID_MENU_FILE_STATE_SPACE_GRAPH_COMPUTE_WEIGHTED:
-        m_ssg->ComputeWeightedEightPuzzleStateSpaceGraph();
+        m_ssg->ComputeWeightedEightPuzzleStateSpaceGraph_UniformCostSearch();
         AddText("State space graph for weighted 8-puzzle is computed.");
         break;
     }

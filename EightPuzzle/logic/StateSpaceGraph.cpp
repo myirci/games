@@ -21,6 +21,10 @@ Node::Node(const std::array<uint8_t, 9>& b, int dtg, int mtg, unsigned int stg) 
     move_to_goal{mtg},
     successor_to_goal{stg} { }
 
+WNode::WNode(const std::array<uint8_t, 9>& b, int dtg, int mtg, int ctg, unsigned int stg) :
+    Node(b,dtg,mtg,stg),
+    cost_to_goal{ctg} { }
+
 StateSpaceGraph::StateSpaceGraph() :
     m_snodes{nullptr},
     m_wnodes{nullptr} { }
@@ -40,26 +44,69 @@ void StateSpaceGraph::ComputeStandardEightPuzzleStateSpaceGraph()
 
     while(!nodes.empty())
     {
-        Node& current_node = nodes.front();
-        cbKey = Utility::GetBoardAsUint(current_node.board);
-        auto successors = Utility::SuccessorBoards(current_node.board);
+        Node& currentNode = nodes.front();
+        cbKey = Utility::GetBoardAsUint(currentNode.board);
+        auto successors = Utility::SuccessorBoards(currentNode.board);
         for(auto& s : successors)
         {
             key = Utility::GetBoardAsUint(s.first);
-            current_node.successors.push_back(key);
+            currentNode.successors.push_back(key);
             if(m_snodes->find(key) == m_snodes->end())
             {
-                nodes.emplace(Node{s.first, current_node.dist_to_goal + 1, s.second, cbKey});
+                nodes.emplace(Node{s.first, currentNode.dist_to_goal + 1, s.second, cbKey});
             }
         }
-        m_snodes->insert(std::make_pair(cbKey, current_node));
+        m_snodes->insert(std::make_pair(cbKey, currentNode));
         nodes.pop();
     }
-
-    ExportStandardEightPuzzleStateSpaceGraph("StateSpaceGraph.csv");
 }
 
-void StateSpaceGraph::ComputeWeightedEightPuzzleStateSpaceGraph()
+void StateSpaceGraph::ComputeWeightedEightPuzzleStateSpaceGraph_UniformCostSearch()
+{
+    if(m_wnodes)
+    {
+        std::cout << "Already computed!" << std::endl;
+        return;
+    }
+
+    m_wnodes = std::make_unique<std::unordered_map<unsigned int, WNode>>();
+    unsigned int key{0}, cbKey{0};
+    auto cmp = [](WNode left, WNode right)
+    {
+        if(left.cost_to_goal > right.cost_to_goal)
+        {
+            return true;
+        }
+        else if(left.cost_to_goal == right.cost_to_goal)
+        {
+            return left.dist_to_goal > right.dist_to_goal;
+        }
+        return false;
+    };
+    std::priority_queue<WNode, std::vector<WNode>, decltype(cmp)> nodes(cmp);
+    nodes.emplace(WNode(std::array<uint8_t, 9>{1,2,3,4,5,6,7,8,0},0,-1,0,0));
+
+    while(!nodes.empty())
+    {
+        WNode currentNode = nodes.top();
+        nodes.pop();
+        cbKey = Utility::GetBoardAsUint(currentNode.board);
+
+        auto successors = Utility::SuccessorBoards(currentNode.board);
+        for(auto& s : successors)
+        {
+            key = Utility::GetBoardAsUint(s.first);
+            currentNode.successors.push_back(key);
+            if(m_wnodes->find(key) == m_wnodes->end())
+            {
+                nodes.emplace(WNode(s.first, currentNode.dist_to_goal + 1, s.second, currentNode.cost_to_goal + s.second, cbKey));
+            }
+        }
+        m_wnodes->insert(std::make_pair(cbKey, currentNode));
+    }
+}
+
+void StateSpaceGraph::ComputeWeightedEightPuzzleStateSpaceGraph_Dijkstra()
 {
 
 }
@@ -88,7 +135,23 @@ int StateSpaceGraph::ExportStandardEightPuzzleStateSpaceGraph(const std::string&
 
 int StateSpaceGraph::ExportWeightedEightPuzzleStateSpaceGraph(const std::string& fname) const
 {
-    return 0;
+    if(!m_wnodes)
+    {
+        return -1;
+    }
+    std::ofstream ofs(fname, std::ofstream::out);
+    ofs << "State,DistanceToGoal,CostToGoal,MoveTowardsGoal,SuccessorTowardsGoal,Successors" << std::endl;
+    for(auto it = m_wnodes->begin(); it != m_wnodes->end(); it++)
+    {
+        ofs << it->first << ","
+            << it->second.dist_to_goal << ","
+            << it->second.cost_to_goal << ","
+            << it->second.move_to_goal << ","
+            << it->second.successor_to_goal << ","
+            << Utility::Join(it->second.successors, '|')
+            << std::endl;
+    }
+    ofs.close();
 }
 
 bool StateSpaceGraph::IsStandardEightPuzzleStateSpaceGraphComputed() const
