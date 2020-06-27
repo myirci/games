@@ -58,13 +58,16 @@ This repository contains three sepearate projects:
 		- Greedy Search (Best First Search):
 			- Orders the nodes to be expanded by heuristic (estimated proximity to the goal state, forward cost h(n))
 			- Implemeted with two different heuristics: number of misplaced tiles, Manhattan distance.
+				- Both heuristics are admissible and consistent
+				- A heuristic function h(N) is admissible if 0 <= h(N) <= h*(), where h*(N) is the actual cost from node N to a goal state.
+				- An admissible heuristic h is consistent (or monotone) if for each node N and each child N' of N: h(N) - h(N') <= c(N,N'). Note that c(N,N') is the cost of moving from N to N'.
+				- A consistent heuristic is also admissible. 
 			- Complete but not optimal.
 		- A* Search
 			- Orders the nodes based on the sum of backward and forward costs (f(n) = g(n) + h(n)).
 			- Implemeted with two different heuristics: number of misplaced tiles, Manhattan distance.
-			- Tree search version: optimal if the heuristic used is admissable. This is not implemented as it takes a lot of time to compute, similar to BFS_Tree Search case. 
-			- Graph search version: optimal if the heuristic used is consistent (consistency implies admissibility: heuristic at a node is not bigger than actual cost).
-			
+			- Tree search version: optimal if the heuristic used is admissible. This is not implemented as it takes a lot of time to compute, similar to BFS_Tree Search case. 
+			- Graph search version: optimal if the heuristic used is consistent.
 	- State Space Graph:
 		- Full state space graph can also be computed and exported.
 		- This graph can be used to find optimal solutions.

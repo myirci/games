@@ -25,6 +25,13 @@ struct CNode
     std::vector<uint8_t> moves;
 };
 
+struct ANode : public CNode
+{
+    ANode(const std::array<uint8_t, 9>& b, unsigned int c, unsigned int h, const std::vector<uint8_t>& mv) :
+        CNode(b, c, mv), total_cost{c + h} { }
+    unsigned int total_cost;
+};
+
 class EightPuzzle
 {
 public:

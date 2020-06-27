@@ -462,14 +462,14 @@ bool EightPuzzle::SolveAStar(Moves& moves, int heuristic, bool stdMode) const
 
     bool solved{false};
     long num_expanded_nodes{0};
-    auto cmp = [](CNode left, CNode right) { return left.cost > right.cost; };
-    std::priority_queue<CNode, std::vector<CNode>, decltype(cmp)> nodes(cmp);
-    nodes.emplace(CNode(m_board, h(m_board), {}));
+    auto cmp = [](ANode left, ANode right) { return left.total_cost > right.total_cost; };
+    std::priority_queue<ANode, std::vector<ANode>, decltype(cmp)> nodes(cmp);
+    nodes.emplace(ANode(m_board, 0, h(m_board), {}));
     HashSet hashSet;
 
     while(!nodes.empty())
     {
-        CNode currentNode = nodes.top();
+        ANode currentNode = nodes.top();
         nodes.pop();
 
         if(Utility::IsSolved(currentNode.board))
@@ -485,9 +485,8 @@ bool EightPuzzle::SolveAStar(Moves& moves, int heuristic, bool stdMode) const
         {
             if(hashSet.find(Utility::GetBoardAsUint(it->first)) == hashSet.end())
             {
-                auto cost = currentNode.cost + h(it->first);
-                cost = stdMode ? (cost+1) : (cost + it->second);
-                CNode nd(it->first, cost, currentNode.moves);
+                auto cost = stdMode ? (currentNode.cost + 1) : (currentNode.cost + it->second);
+                ANode nd(it->first, cost, h(it->first), currentNode.moves);
                 nd.moves.push_back(it->second);
                 nodes.emplace(nd);
             }
