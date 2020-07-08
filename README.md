@@ -1,19 +1,21 @@
 # games and puzzles
 Hobby games, testing environment for different search algorithms for game play and puzzle solving. 
 
-This repository contains three sepearate projects:
+This repository contains four separate projects:
 
 1) Tic-Tac-Toe: C++, WxWidgets
-	- Different types of players are implemented.
-		- Human player	
+	- Classic Tic-Tac-Toe game also known as X-O-X.
+	- Players can select their symbols (X or O).
+	- Different player types can be assinged to players (Player1, Player2).
+		- Human player
 		- Computer plays random moves
 		- Computer plays with some simple logical rules
-		- Computer plays using the precomputed game tree.
+		- Computer plays using the precomputed game state space graph
 			- Computer chooses moves such that the other player has more ways to go wrong.  
 			- Computer chooses a random move first among the winning moves (if exist), then among the drawing moves (if exists) and among the loosing moves (if all of the moves are loosing).
 		- Computer plays using the minimax algorithm.
 		- Computer plays using the negamax algorithm which is exactly same with minimax algorithm with less code.
-		- Computer plays with negamax algorithm and alpha beta prunning. (Not implemented yet.)
+		- Computer plays with negamax algorithm and alpha-beta prunning. (Not implemented yet.)
 		- Computer plays using Monte Carlo Tree Search algortihm. (Not implemented yet.)
 
 2) 8-Puzzle: C++, WxWidgets
@@ -83,3 +85,8 @@ This repository contains three sepearate projects:
 	
 4) Sudoku Solver: Processing, Java
 	- Have look at the documentation in the project for the details.
+	
+5) Nqueens Problem
+	- A C++ solution that can export the solutions to a file
+	- Single-core implemented
+	- Multi-core version will be implemented as well.
