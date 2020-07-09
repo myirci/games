@@ -94,7 +94,6 @@ This repository contains four separate projects:
 			- queen positions: (0,0), (1,4), (2,7), (3,5), (4,2), (5,6), (6,1), (7,3)		
 			- (0,1,2,3,4,5,6,7)
 			- (0,4,7,5,2,6,1,3)
-	- Single-core implemented
-	- Multi-core version will be implemented as well.
+	- Single-core and multi-core (using task-based parellization via std::async and std::future) versions are imlemented
 	
 	
