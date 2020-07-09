@@ -3,29 +3,42 @@
 #include "Nqueens.h"
 
 Nqueens::Nqueens(size_t problem_size) :
+    solved{false},
+    num_solutions{0},
     n{problem_size},
-    board{vector<int>(n, -1)},
-    solved{false} { }
+    board{vector<int>(n, -1)} { }
 
 Nqueens::Nqueens(vector<int>&& v) :
+    solved{false},
+    num_solutions{0},
     n{v.size()},
-    board{std::move(v)},
-    solved{false} { }
+    board{std::move(v)} { }
 
 Nqueens::Nqueens(const vector<int>& v) :
+    solved{false},
+    num_solutions{0},
     n{v.size()},
-    board{v},
-    solved{false}{ }
+    board{v} { }
 
-void Nqueens::Solve()
+void Nqueens::Solve(int row, bool keep_solution)
 {
-    PlaceQueen(0);
+    PlaceQueen(row, keep_solution);
     solved = true;
 }
 
-int Nqueens::GetNumberOfSolutions() const
+void Nqueens::SetQueen(size_t row, int col)
 {
-    return solved ? solutions.size() : -1;
+    board[row] = col;
+}
+
+int Nqueens::GetQueen(size_t row) const
+{
+    return board[row];
+}
+
+size_t Nqueens::GetNumberOfSolutions() const
+{
+    return num_solutions;
 }
 
 void Nqueens::ExportSolutions(const string& path) const
@@ -52,7 +65,7 @@ void Nqueens::ExportSolutions(const string& path) const
     ofs.close();
 }
 
-void Nqueens::PlaceQueen(size_t row)
+void Nqueens::PlaceQueen(size_t row, bool keep_solution)
 {
     // try to place a queen to the given row, iterate through all rows
     for(size_t col = 0; col < n; col++)
@@ -65,11 +78,15 @@ void Nqueens::PlaceQueen(size_t row)
         {
             if(row == n - 1)
             {
-                solutions.push_back(board);
+                num_solutions++;
+                if(keep_solution)
+                {
+                    solutions.push_back(board);
+                }
             }
             else
             {
-                PlaceQueen(row+1);
+                PlaceQueen(row+1, keep_solution);
             }
         }
 
@@ -78,10 +95,11 @@ void Nqueens::PlaceQueen(size_t row)
     }
 }
 
-bool Nqueens::IsValid(size_t row, size_t col)
+bool Nqueens::IsValid(size_t row, size_t col) const
 {
     int sum{static_cast<int>(row) + static_cast<int>(col)},
         diff{static_cast<int>(col) - static_cast<int>(row)};
+
     for(size_t r = 0; r < row; r++)
     {
         if(board[r] == col || board[r] == diff + r || board[r] == sum - r)
