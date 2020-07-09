@@ -86,7 +86,15 @@ This repository contains four separate projects:
 4) Sudoku Solver: Processing, Java
 	- Have look at the documentation in the project for the details.
 	
-5) Nqueens Problem
-	- A C++ solution that can export the solutions to a file
+5) Nqueens Problem: C++
+	- Computes all solutions of the nqueens problem for a given n
+	- Not the fastest implementation but works reasonably well
+	- Solutions are encoded as a permutation:
+		- Ex: 0, 4, 7, 5, 2, 6, 1, 3 
+			- queen positions: (0,0), (1,4), (2,7), (3,5), (4,2), (5,6), (6,1), (7,3)		
+			- (0,1,2,3,4,5,6,7)
+			- (0,4,7,5,2,6,1,3)
 	- Single-core implemented
 	- Multi-core version will be implemented as well.
+	
+	
