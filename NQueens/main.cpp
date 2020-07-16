@@ -14,7 +14,7 @@ void solve_multi_core(size_t n, bool export_to_text_file);
 
 int main(void)
 {
-    size_t n{5};
+    size_t n{10};
 
     auto start1 = chrono::system_clock::now();
     solve_single_core(n, false);
